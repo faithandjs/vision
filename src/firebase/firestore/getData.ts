@@ -1,13 +1,13 @@
-import firebase_app from "../config";
+import { database } from "../config";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 // Get the Firestore instance
-const db = getFirestore(firebase_app);
+// const db = getFirestore(firebase_app);
 
 // Function to retrieve a document from a Firestore collection
-export default async function getDocument(collection, id) {
+export default async function getDocument(collection: any, id: any) {
   // Create a document reference using the provided collection and ID
-  const docRef = doc(db, collection, id);
+  // const docRef = doc(db, collection, id);
   // Variable to store the result of the operation
   let result = null;
   // Variable to store any error that occurs during the operation
@@ -15,7 +15,7 @@ export default async function getDocument(collection, id) {
 
   try {
     // Retrieve the document using the document reference
-    result = await getDoc(docRef);
+    // result = await getDoc(docRef);
   } catch (e) {
     // Catch and store any error that occurs during the operation
     error = e;

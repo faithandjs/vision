@@ -1,0 +1,64 @@
+* {
+  @apply transition-[background-color] duration-200;
+}
+
+html {
+  body {
+    // background-color: #e6e6e6;
+    // color: #2f2f2f;
+    background-color: #1e1e1e;
+    // background-color: #eeeaf0;
+    // color: #1d1d1d;
+    // color: #e4e4e4;
+    // text-[#9fa19c]
+    @apply text-[#e4e4e4] dark:text-white;
+  }
+  &.dark {
+    body {
+      background-color: #37444c;
+      color: #fff;
+    }
+  }
+}
+html.dark .mantine-Paper-root {
+}
+html.dark .mantine-Modal-modal {
+  @apply bg-darkbg text-white;
+}
+html.dark .mantine-Modal-overlay {
+}
+
+.vision-board {
+  .grid {
+    opacity: 1;
+    z-index: 10;
+  }
+  .cards {
+    opacity: 0;
+    z-index: -10;
+    div {
+      display: none;
+    }
+  }
+}
+.not-vision-board {
+  .grid {
+    opacity: 0;
+    z-index: -10;
+  }
+  .cards {
+    opacity: 1;
+    z-index: 10;
+  }
+}
+.vision-body {
+  height: 100vh;
+  overflow: hidden;
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
