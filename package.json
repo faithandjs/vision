@@ -11,7 +11,7 @@
   "dependencies": {
     "@mantine/core": "^7.17.0",
     "@mantine/hooks": "^8.0.2",
-    "@mantine/modals": "^7.17.5",
+    "@mantine/modals": "^8.0.2",
     "@mantine/notifications": "^7.17.5",
     "@react-icons/all-files": "^4.1.0",
     "@types/node": "22.15.29",
