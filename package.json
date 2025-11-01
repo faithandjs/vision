@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@mantine/core": "^8.2.2",
-    "@mantine/hooks": "^8.0.2",
+    "@mantine/hooks": "^8.3.6",
     "@mantine/modals": "^8.3.6",
     "@mantine/notifications": "^8.3.2",
     "@react-icons/all-files": "^4.1.0",
