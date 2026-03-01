@@ -15,7 +15,7 @@
     "@mantine/notifications": "^8.3.13",
     "@react-icons/all-files": "^4.1.0",
     "@types/node": "25.1.0",
-    "@types/react": "19.2.10",
+    "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "autoprefixer": "10.4.24",
     "eslint": "9.39.2",
