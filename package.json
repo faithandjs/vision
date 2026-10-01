@@ -14,7 +14,7 @@
     "@mantine/modals": "^9.6.3",
     "@mantine/notifications": "^9.5.2",
     "@react-icons/all-files": "^4.1.0",
-    "@types/node": "26.4.0",
+    "@types/node": "26.6.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.2.5",
     "autoprefixer": "10.5.4",
