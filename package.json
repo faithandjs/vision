@@ -12,7 +12,7 @@
     "@mantine/core": "^9.5.2",
     "@mantine/hooks": "^9.6.3",
     "@mantine/modals": "^9.6.3",
-    "@mantine/notifications": "^9.5.2",
+    "@mantine/notifications": "^9.7.4",
     "@react-icons/all-files": "^4.1.0",
     "@types/node": "26.6.3",
     "@types/react": "19.3.0",
