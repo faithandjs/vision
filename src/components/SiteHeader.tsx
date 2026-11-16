@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { LuLogOut, LuMoon, LuPencil, LuSun } from "react-icons/lu";
+import { LuLogOut, LuMoon, LuNotebookPen, LuPencil, LuSun } from "react-icons/lu";
 import { useAuth } from "@/context/AuthProvider";
 import { useTheme } from "@/context/ThemeProvider";
 import { useToast } from "@/context/ToastProvider";
@@ -116,6 +116,9 @@ function UserMenu() {
           <div className="my-1 h-px bg-line" />
           <Link role="menuitem" href="/edit" className={itemClass} onClick={() => setOpen(false)}>
             <LuPencil size={15} className="text-muted" /> Edit board
+          </Link>
+          <Link role="menuitem" href="/journal/edit" className={itemClass} onClick={() => setOpen(false)}>
+            <LuNotebookPen size={15} className="text-muted" /> Edit journal
           </Link>
           <button role="menuitem" className={itemClass + " text-danger"} onClick={handleSignOut}>
             <LuLogOut size={15} /> Sign out

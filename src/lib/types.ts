@@ -26,4 +26,9 @@ export interface Board {
   data: BoardCard[];
 }
 
-export type ViewMode = "collage" | "cards";
+/** Longer-range plans (five-year plan, career…), kept apart from the board. */
+export interface Journal {
+  entries: BoardCard[];
+}
+
+export type ViewMode = "cards" | "collage" | "journal";
