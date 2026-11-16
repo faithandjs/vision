@@ -6,13 +6,14 @@ import { LuLogOut, LuNotebookPen, LuPencil, LuSettings } from "react-icons/lu";
 import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
 import { signOut } from "@/firebase/auth";
-import { Avatar } from "./ProfileSection";
-import SettingsDialog from "./SettingsDialog";
+import AppearanceSettings from "./AppearanceSettings";
+import Avatar from "./Avatar";
 
 export function Logo() {
   return (
     <Link href="/" aria-label="enVision, home" className="font-display text-2xl tracking-tight">
-      <span className="text-accent-deep italic">en</span>Vision<span className="text-accent">.</span>
+      <span className="text-accent-deep italic">en</span>Vision
+      <span className="text-accent">.</span>
     </Link>
   );
 }
@@ -20,30 +21,17 @@ export function Logo() {
 export default function SiteHeader({ children }: { children?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/75 backdrop-blur-xl">
-      {/* Phones: a packed row. md and up: three columns so the view bar sits in the true center. */}
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-1.5 px-4 sm:gap-2 sm:px-6 md:grid md:grid-cols-[1fr_auto_1fr] lg:px-8">
-        <div className="mr-auto md:mr-0 md:justify-self-start">
+      {/* Three columns so the view bar sits in the true center. */}
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-1.5 px-4 sm:gap-2 sm:px-6 lg:px-8">
+        <div className="justify-self-start">
           <Logo />
         </div>
-        <div className="md:justify-self-center">{children}</div>
-        <div className="flex items-center gap-1.5 sm:gap-2 md:justify-self-end">
-          <SettingsButton />
+        <div className="justify-self-center">{children}</div>
+        <div className="flex items-center gap-1.5 justify-self-end sm:gap-2">
           <UserMenu />
         </div>
       </div>
     </header>
-  );
-}
-
-function SettingsButton() {
-  const [open, setOpen] = useState(false);
-  return (
-    <>
-      <button onClick={() => setOpen(true)} className="icon-btn" aria-label="Settings" aria-haspopup="dialog">
-        <LuSettings size={18} />
-      </button>
-      {open && <SettingsDialog onClose={() => setOpen(false)} />}
-    </>
   );
 }
 
@@ -103,17 +91,25 @@ function UserMenu() {
         aria-label="Account menu"
         className="rounded-full transition hover:brightness-105"
       >
-        <Avatar src={user.photoURL} name={name} className="size-9 text-sm" />
+        <span className="icon-btn md:hidden">
+          <LuSettings size={18} />
+        </span>
+        <span className="hidden md:block">
+          <Avatar src={user.photoURL} name={name} className="size-9 text-sm" />
+        </span>
       </button>
       {open && (
         <div
           role="menu"
-          className="animate-rise absolute right-0 mt-2 w-64 rounded-2xl border border-line bg-surface p-1.5 shadow-2xl shadow-black/15"
+          className="animate-rise no-scrollbar absolute right-0 mt-2 max-h-[calc(100dvh-5rem)] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-1.5 shadow-2xl shadow-black/15"
         >
-          <div className="px-3 py-2">
-            <p className="text-xs text-muted">Signed in as</p>
-            <p className="truncate text-sm font-medium">{name}</p>
-            {user.displayName && user.email && <p className="truncate text-xs text-muted">{user.email}</p>}
+          <div className="flex items-center gap-3 px-3 py-2">
+            <Avatar src={user.photoURL} name={name} className="size-10 shrink-0 text-sm" />
+            <div className="min-w-0">
+              <p className="text-xs text-muted">Signed in as</p>
+              <p className="truncate text-sm font-medium">{name}</p>
+              {user.displayName && user.email && <p className="truncate text-xs text-muted">{user.email}</p>}
+            </div>
           </div>
           <div className="my-1 h-px bg-line" />
           <Link role="menuitem" href="/edit" className={itemClass} onClick={() => setOpen(false)}>
@@ -122,6 +118,11 @@ function UserMenu() {
           <Link role="menuitem" href="/journal/new" className={itemClass} onClick={() => setOpen(false)}>
             <LuNotebookPen size={15} className="text-muted" /> New journal entry
           </Link>
+          <div className="my-1 h-px bg-line" />
+          <div className="px-3 py-2">
+            <AppearanceSettings />
+          </div>
+          <div className="my-1 h-px bg-line" />
           <button role="menuitem" className={itemClass + " text-danger"} onClick={handleSignOut}>
             <LuLogOut size={15} /> Sign out
           </button>
