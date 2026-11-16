@@ -28,7 +28,14 @@ The app runs without Firebase keys, but only the example board is available.
 1. Create a project at <https://console.firebase.google.com/> and add a **Web app**. Copy its config values into `.env.local`.
 2. **Authentication → Sign-in method**: enable **Email/Password**.
 3. **Realtime Database**: create a database. If it isn't in the default US region, also set `NEXT_PUBLIC_FIREBASE_DATABASE_URL`.
-4. Publish the rules in [`database.rules.json`](database.rules.json) so each user can only read and write their own board.
+4. Deploy the security rules in [`database.rules.json`](database.rules.json) so each user can only read and write their own board:
+
+   ```bash
+   npx firebase login        # one time, opens the browser
+   npm run deploy:rules
+   ```
+
+   The target project is set in `.firebaserc`. Change it if you use a different Firebase project.
 
 Each board is stored at `users/{uid}` as `{ title, theme, data: Card[] }`.
 
@@ -40,6 +47,7 @@ Each board is stored at `users/{uid}` as `{ title, theme, data: Card[] }`.
 | `npm run build` | Production build         |
 | `npm start`     | Serve the production build |
 | `npm run lint`  | ESLint                   |
+| `npm run deploy:rules` | Deploy Realtime Database security rules |
 
 ## Project layout
 
