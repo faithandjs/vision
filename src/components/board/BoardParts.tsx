@@ -11,11 +11,11 @@ export function BoardHero({ board }: { board: Board }) {
   return (
     <section className="animate-rise py-12 text-center sm:py-20">
       <p className="eyebrow">Vision board</p>
-      <h1 className="mx-auto mt-6 max-w-5xl font-script text-6xl leading-[1.15] text-balance sm:text-7xl lg:text-8xl">
+      <h1 className="mx-auto mt-4 max-w-4xl font-display text-5xl leading-[1.05] tracking-tight text-balance sm:text-7xl lg:text-8xl">
         {board.title || "My vision board"}
       </h1>
       {board.theme && (
-        <p className="mx-auto mt-4 max-w-2xl font-display text-xl text-balance text-muted italic sm:text-2xl">
+        <p className="mx-auto mt-5 max-w-2xl font-display text-xl text-balance text-muted italic sm:text-2xl">
           {board.theme}
         </p>
       )}
