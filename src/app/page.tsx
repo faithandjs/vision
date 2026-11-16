@@ -5,16 +5,20 @@ import CardDialog from "@/components/board/CardDialog";
 import CollageStudio from "@/components/board/CollageStudio";
 import FlipCard from "@/components/board/FlipCard";
 import ViewSwitcher from "@/components/board/ViewSwitcher";
-import { BoardHero, BoardSkeleton, EmptyBoard, SourceNotice } from "@/components/board/BoardParts";
+import { BoardHero, BoardSkeleton, DraftNotice, EmptyBoard, SourceNotice } from "@/components/board/BoardParts";
 import SiteHeader from "@/components/SiteHeader";
+import { useAuth } from "@/context/AuthProvider";
 import { useBoard } from "@/context/BoardProvider";
-import { usePersistentState } from "@/hooks/usePersistentState";
+import { usePersistentState, useStored } from "@/hooks/usePersistentState";
+import { draftKey, parseDraft } from "@/lib/drafts";
 import type { ViewMode } from "@/lib/types";
 
 const VIEWS: readonly ViewMode[] = ["collage", "cards"];
 
 export default function BoardPage() {
   const { board, source, loading, toggleCheck } = useBoard();
+  const { user } = useAuth();
+  const hasDraft = parseDraft(useStored(user ? draftKey(user.uid) : "vb-draft:none")) !== null;
   const [view, setView] = usePersistentState<ViewMode>("vb-view", "collage", VIEWS);
   const [flipped, setFlipped] = useState<ReadonlySet<number>>(new Set());
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -53,7 +57,7 @@ export default function BoardPage() {
           <>
             {/* In collage view the image itself carries the title. */}
             {view === "cards" || count === 0 ? <BoardHero board={board} /> : <div className="h-8" />}
-            <SourceNotice source={source} />
+            {hasDraft ? <DraftNotice /> : <SourceNotice source={source} />}
             {count === 0 ? (
               <EmptyBoard />
             ) : view === "collage" ? (

@@ -26,15 +26,27 @@ function read(key: string): string | null {
   }
 }
 
-function write(key: string, value: string) {
-  memory.set(key, value);
-  try {
-    localStorage.setItem(key, value);
-  } catch {}
+/** Writes (or with `null`, removes) a stored value and notifies subscribers. */
+export function writeStored(key: string, value: string | null) {
+  if (value === null) {
+    memory.delete(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {}
+  } else {
+    memory.set(key, value);
+    try {
+      localStorage.setItem(key, value);
+    } catch {}
+  }
   notify();
 }
 
-function useStored(key: string) {
+export const readStored = read;
+const write = writeStored;
+
+/** The raw stored string for `key` (null on the server or when absent). */
+export function useStored(key: string) {
   return useSyncExternalStore(
     subscribe,
     () => read(key),

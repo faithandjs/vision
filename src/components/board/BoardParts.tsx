@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { LuArrowRight, LuPencil, LuSparkles } from "react-icons/lu";
+import { LuArrowRight, LuFilePen, LuPencil, LuSparkles } from "react-icons/lu";
 import type { BoardSource } from "@/context/BoardProvider";
 import { boardProgress } from "@/lib/board";
 import type { Board } from "@/lib/types";
@@ -43,6 +43,18 @@ export function SourceNotice({ source }: { source: BoardSource }) {
       <span>{text}</span>
       <Link href={href} className="btn-accent py-1.5">
         {cta} <LuArrowRight size={14} />
+      </Link>
+    </div>
+  );
+}
+
+export function DraftNotice() {
+  return (
+    <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-3xl border border-accent/60 bg-accent/15 py-1.5 pr-1.5 pl-4 text-sm sm:rounded-full">
+      <LuFilePen size={15} className="shrink-0 text-accent-deep" />
+      <span>You have an unsaved draft.</span>
+      <Link href="/edit" className="btn-accent py-1.5">
+        Continue editing <LuArrowRight size={14} />
       </Link>
     </div>
   );
