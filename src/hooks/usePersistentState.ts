@@ -1,8 +1,10 @@
 "use client";
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
-// Small localStorage-backed state that is safe during server rendering
-// (returns the fallback there) and stays in sync across components and tabs.
+// localStorage-backed state that is safe during server rendering (returns the
+// fallback there), stays in sync across components and tabs, and keeps
+// working in memory when storage is unavailable (e.g. some private modes).
+const memory = new Map<string, string>();
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((l) => l());
 
@@ -16,6 +18,7 @@ function subscribe(cb: () => void) {
 }
 
 function read(key: string): string | null {
+  if (memory.has(key)) return memory.get(key)!;
   try {
     return localStorage.getItem(key);
   } catch {
@@ -23,23 +26,41 @@ function read(key: string): string | null {
   }
 }
 
-export function usePersistentState<T extends string>(key: string, fallback: T, allowed: readonly T[]) {
-  const raw = useSyncExternalStore(
+function write(key: string, value: string) {
+  memory.set(key, value);
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+  notify();
+}
+
+function useStored(key: string) {
+  return useSyncExternalStore(
     subscribe,
     () => read(key),
     () => null,
   );
+}
+
+/** A persisted string limited to a known set of values. */
+export function usePersistentState<T extends string>(key: string, fallback: T, allowed: readonly T[]) {
+  const raw = useStored(key);
   const value = raw !== null && (allowed as readonly string[]).includes(raw) ? (raw as T) : fallback;
+  const setValue = useCallback((next: T) => write(key, next), [key]);
+  return [value, setValue] as const;
+}
 
-  const setValue = useCallback(
-    (next: T) => {
-      try {
-        localStorage.setItem(key, next);
-      } catch {}
-      notify();
-    },
-    [key],
-  );
-
+/** A persisted object, merged over `fallback` so new fields get defaults. Pass a stable `fallback`. */
+export function usePersistentObject<T extends object>(key: string, fallback: T) {
+  const raw = useStored(key);
+  const value = useMemo<T>(() => {
+    if (!raw) return fallback;
+    try {
+      return { ...fallback, ...JSON.parse(raw) };
+    } catch {
+      return fallback;
+    }
+  }, [raw, fallback]);
+  const setValue = useCallback((next: T) => write(key, JSON.stringify(next)), [key]);
   return [value, setValue] as const;
 }

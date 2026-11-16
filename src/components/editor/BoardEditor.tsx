@@ -205,7 +205,7 @@ export default function BoardEditor({ initial, isStarter }: { initial: Board; is
 
         {isStarter && (
           <div className="mb-8 flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 sm:flex-row sm:items-center">
-            <LuSparkles size={18} className="shrink-0 text-accent" />
+            <LuSparkles size={18} className="shrink-0 text-accent-deep" />
             <p className="flex-1 text-sm">
               We&apos;ve filled this in with an example board. Change anything you like, or start from scratch.
             </p>
@@ -262,7 +262,7 @@ export default function BoardEditor({ initial, isStarter }: { initial: Board; is
 
         <button
           onClick={addCard}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-line py-8 text-sm font-medium text-muted transition hover:border-accent hover:text-accent"
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-line py-8 text-sm font-medium text-muted transition hover:border-accent hover:text-accent-deep"
         >
           <LuPlus size={16} /> Add a card
         </button>
