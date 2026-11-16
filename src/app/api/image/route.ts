@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
     if (!(await isPublicUrl(url))) return fail(400, "URL not allowed");
     res = await fetch(url, {
       redirect: "manual",
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; VisionBoard/1.0)", Accept: "image/*" },
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; enVision/1.0)", Accept: "image/*" },
       signal: AbortSignal.timeout(10_000),
     }).catch(() => null);
     if (!res) return fail(502, "Couldn't fetch image");

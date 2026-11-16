@@ -14,6 +14,8 @@
   --accent-ink: #1d2112;
   /* Sage is too light for text on cream; use this for text, borders, focus. */
   --accent-deep: #5b6830;
+  /* Sage that reads on the ink-colored (selected) pill. */
+  --accent-on-ink: #b4c27a;
   --success: #6f8238;
   --danger: #b23a2a;
   --glow: rgb(156 167 100 / 0.22);
@@ -29,6 +31,7 @@
   --accent: #9ca764;
   --accent-ink: #161910;
   --accent-deep: #bcc883;
+  --accent-on-ink: #5b6830;
   --success: #a9b86e;
   --danger: #f08070;
   --glow: rgb(156 167 100 / 0.1);
@@ -44,6 +47,7 @@
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-accent-deep: var(--accent-deep);
+  --color-accent-on-ink: var(--accent-on-ink);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;

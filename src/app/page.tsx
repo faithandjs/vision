@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { LuRefreshCw } from "react-icons/lu";
 import CardDialog from "@/components/board/CardDialog";
 import CollageStudio from "@/components/board/CollageStudio";
 import FlipCard from "@/components/board/FlipCard";
@@ -9,22 +8,21 @@ import { BoardHero, BoardSkeleton, DraftNotice, EmptyBoard, SourceNotice } from 
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthProvider";
 import { useBoard } from "@/context/BoardProvider";
-import { usePersistentState, useStored } from "@/hooks/usePersistentState";
+import { useStored } from "@/hooks/usePersistentState";
 import { draftKey, parseDraft } from "@/lib/drafts";
 import type { ViewMode } from "@/lib/types";
-
-const VIEWS: readonly ViewMode[] = ["collage", "cards"];
 
 export default function BoardPage() {
   const { board, source, loading, toggleCheck } = useBoard();
   const { user } = useAuth();
   const hasDraft = parseDraft(useStored(user ? draftKey(user.uid) : "vb-draft:none")) !== null;
-  const [view, setView] = usePersistentState<ViewMode>("vb-view", "collage", VIEWS);
+  // Always open on Cards; the view isn't remembered, so there's no flip after load.
+  const [view, setView] = useState<ViewMode>("cards");
   const [flipped, setFlipped] = useState<ReadonlySet<number>>(new Set());
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    document.title = board.title ? `${board.title} · Vision Board` : "Vision Board";
+    document.title = board.title ? `${board.title} · enVision` : "enVision";
   }, [board.title]);
 
   const count = board.data.length;
@@ -41,13 +39,11 @@ export default function BoardPage() {
   return (
     <>
       <SiteHeader>
-        {view === "cards" && count > 0 && (
-          <button onClick={flipAll} className="btn-ghost" aria-label={allFlipped ? "Show fronts" : "Flip all cards"}>
-            <LuRefreshCw size={15} />
-            <span className="hidden md:inline">{allFlipped ? "Show fronts" : "Flip all"}</span>
-          </button>
-        )}
-        <ViewSwitcher value={view} onChange={setView} />
+        <ViewSwitcher
+          value={view}
+          onChange={setView}
+          flip={count > 0 ? { allFlipped, onToggle: flipAll } : undefined}
+        />
       </SiteHeader>
 
       <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">

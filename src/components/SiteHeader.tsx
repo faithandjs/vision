@@ -10,8 +10,8 @@ import { signOut } from "@/firebase/auth";
 
 export function Logo() {
   return (
-    <Link href="/" className="font-display text-2xl tracking-tight">
-      Vision<span className="text-accent">.</span>
+    <Link href="/" aria-label="enVision, home" className="font-display text-2xl tracking-tight">
+      <span className="text-accent-deep italic">en</span>Vision<span className="text-accent">.</span>
     </Link>
   );
 }
