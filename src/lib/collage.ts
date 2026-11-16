@@ -266,7 +266,11 @@ export function renderCollage(
 
   // ---- card title labels, like words cut from a magazine
   if (o.showLabels) {
-    const labelText = textOn(o.cardColor).ink;
+    // Labels share the title card's color and opacity. When mostly see-through,
+    // switch to white text with a shadow so it still reads over the photo.
+    const alpha = o.cardOpacity / 100;
+    const seeThrough = alpha < 0.5;
+    const labelText = seeThrough ? "#ffffff" : textOn(o.cardColor).ink;
     tiles.forEach((rect, i) => {
       const text0 = board.data[i].title;
       if (!text0) return;
@@ -286,12 +290,18 @@ export function renderCollage(
       ctx.save();
       ctx.translate(lx + lw / 2, ly + lh / 2);
       ctx.rotate(((i % 3) - 1) * 0.02);
-      ctx.shadowColor = "rgba(0,0,0,0.25)";
-      ctx.shadowBlur = 10 * unit;
-      ctx.shadowOffsetY = 3 * unit;
-      ctx.fillStyle = o.cardColor;
-      ctx.fillRect(-lw / 2, -lh / 2, lw, lh);
-      ctx.shadowColor = "transparent";
+      if (alpha > 0) {
+        ctx.shadowColor = `rgba(0,0,0,${0.25 * alpha})`;
+        ctx.shadowBlur = 10 * unit;
+        ctx.shadowOffsetY = 3 * unit;
+        ctx.fillStyle = rgba(o.cardColor, alpha);
+        ctx.fillRect(-lw / 2, -lh / 2, lw, lh);
+      }
+      if (seeThrough) {
+        ctx.shadowColor = "rgba(0,0,0,0.6)";
+        ctx.shadowBlur = 8 * unit;
+        ctx.shadowOffsetY = 0;
+      } else ctx.shadowColor = "transparent";
       ctx.fillStyle = labelText;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
