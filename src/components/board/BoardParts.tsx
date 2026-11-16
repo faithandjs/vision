@@ -39,7 +39,7 @@ export function SourceNotice({ source }: { source: BoardSource }) {
       : ["This example is here to get you started.", "Make it yours", "/edit"];
   return (
     <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-3xl border border-line bg-surface/70 py-1.5 pr-1.5 pl-4 text-sm backdrop-blur sm:rounded-full">
-      <LuSparkles size={15} className="shrink-0 text-accent" />
+      <LuSparkles size={15} className="shrink-0 text-accent-deep" />
       <span>{text}</span>
       <Link href={href} className="btn-accent py-1.5">
         {cta} <LuArrowRight size={14} />

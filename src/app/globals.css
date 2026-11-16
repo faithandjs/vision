@@ -3,31 +3,35 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --bg: #f7f4ef;
-  --surface: #ffffff;
-  --surface-muted: #efe9e1;
-  --ink: #1f1b17;
-  --muted: #71675d;
-  --line: rgb(31 27 23 / 0.1);
-  --accent: #c2553a;
-  --accent-ink: #ffffff;
-  --success: #3d7a55;
-  --danger: #c0392b;
-  --glow: rgb(194 85 58 / 0.1);
+  /* Brand: sage #9ca764 and cream #f1e8c7 */
+  --bg: #f1e8c7;
+  --surface: #f9f4e3;
+  --surface-muted: #e6dbb4;
+  --ink: #262a1a;
+  --muted: #676650;
+  --line: rgb(38 42 26 / 0.12);
+  --accent: #9ca764;
+  --accent-ink: #1d2112;
+  /* Sage is too light for text on cream; use this for text, borders, focus. */
+  --accent-deep: #5b6830;
+  --success: #6f8238;
+  --danger: #b23a2a;
+  --glow: rgb(156 167 100 / 0.22);
 }
 
 .dark {
-  --bg: #11100e;
-  --surface: #1b1916;
-  --surface-muted: #262320;
-  --ink: #f3eee7;
-  --muted: #a39a8f;
-  --line: rgb(243 238 231 / 0.1);
-  --accent: #ea8466;
-  --accent-ink: #1a0e0a;
-  --success: #74c294;
+  --bg: #161910;
+  --surface: #1f2318;
+  --surface-muted: #2a2f21;
+  --ink: #f1e8c7;
+  --muted: #b3ab8c;
+  --line: rgb(241 232 199 / 0.1);
+  --accent: #9ca764;
+  --accent-ink: #161910;
+  --accent-deep: #bcc883;
+  --success: #a9b86e;
   --danger: #f08070;
-  --glow: rgb(234 132 102 / 0.08);
+  --glow: rgb(156 167 100 / 0.1);
 }
 
 @theme inline {
@@ -39,6 +43,7 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
+  --color-accent-deep: var(--accent-deep);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -56,10 +61,10 @@
     background-repeat: no-repeat;
   }
   ::selection {
-    background: color-mix(in oklab, var(--accent) 30%, transparent);
+    background: color-mix(in oklab, var(--accent) 45%, transparent);
   }
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--accent-deep);
     outline-offset: 2px;
   }
   button:not(:disabled),
@@ -87,7 +92,7 @@
   @apply grid size-9 place-items-center rounded-full text-muted transition hover:bg-surface-muted hover:text-ink disabled:pointer-events-none disabled:opacity-40;
 }
 @utility input {
-  @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/70 transition outline-none focus:border-accent focus:ring-4 focus:ring-accent/15;
+  @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/70 transition outline-none focus:border-accent-deep focus:ring-4 focus:ring-accent/25;
   &[aria-invalid="true"] {
     @apply border-danger focus:ring-danger/15;
   }
