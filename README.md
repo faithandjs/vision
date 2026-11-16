@@ -5,7 +5,7 @@ A personal vision board. Pin a picture for each thing you're working toward this
 - **Collage view**: a masonry board of your images; click one to open its details.
 - **Cards view**: flip cards with your notes and checklists on the back, plus a "Flip all" toggle.
 - **Editor** (`/edit`): set your board's title and theme, then add, reorder and remove cards.
-- Light and dark themes, sign-in with email and password, and live sync through the Firebase Realtime Database.
+- Light and dark themes, sign-in with Google or email and password, and live sync through the Firebase Realtime Database.
 
 Signed-out visitors see an example board. New accounts start from the same example until they save their own.
 
@@ -26,7 +26,10 @@ The app runs without Firebase keys, but only the example board is available.
 ### Firebase setup
 
 1. Create a project at <https://console.firebase.google.com/> and add a **Web app**. Copy its config values into `.env.local`.
-2. **Authentication → Sign-in method**: enable **Email/Password**.
+2. **Authentication → Sign-in method**: enable the providers you want:
+   - **Email/Password**
+   - **Google**: enable it and pick a support email.
+   - **Authentication → Settings → Authorized domains**: add your production domain (`localhost` is allowed by default).
 3. **Realtime Database**: create a database. If it isn't in the default US region, also set `NEXT_PUBLIC_FIREBASE_DATABASE_URL`.
 4. Deploy the security rules in [`database.rules.json`](database.rules.json) so each user can only read and write their own board:
 

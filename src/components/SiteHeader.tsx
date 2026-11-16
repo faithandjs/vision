@@ -75,6 +75,8 @@ function UserMenu() {
     );
   }
 
+  const name = user.displayName || user.email || "Your account";
+
   const handleSignOut = async () => {
     setOpen(false);
     try {
@@ -93,9 +95,13 @@ function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
-        className="grid size-9 place-items-center rounded-full bg-accent text-sm font-semibold text-accent-ink transition hover:brightness-105"
+        className="grid size-9 place-items-center overflow-hidden rounded-full bg-accent text-sm font-semibold text-accent-ink transition hover:brightness-105"
       >
-        {(user.email ?? "?").charAt(0).toUpperCase()}
+        {user.photoURL ? (
+          <img src={user.photoURL} alt="" referrerPolicy="no-referrer" className="size-full object-cover" />
+        ) : (
+          name.charAt(0).toUpperCase()
+        )}
       </button>
       {open && (
         <div
@@ -104,7 +110,8 @@ function UserMenu() {
         >
           <div className="px-3 py-2">
             <p className="text-xs text-muted">Signed in as</p>
-            <p className="truncate text-sm font-medium">{user.email}</p>
+            <p className="truncate text-sm font-medium">{name}</p>
+            {user.displayName && user.email && <p className="truncate text-xs text-muted">{user.email}</p>}
           </div>
           <div className="my-1 h-px bg-line" />
           <Link role="menuitem" href="/edit" className={itemClass} onClick={() => setOpen(false)}>

@@ -2,12 +2,19 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { FcGoogle } from "react-icons/fc";
 import { LuCircleAlert, LuEye, LuEyeOff, LuLoaderCircle } from "react-icons/lu";
 import CoverImage from "@/components/CoverImage";
 import { Logo } from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
-import { authErrorMessage, signIn, signUp } from "@/firebase/auth";
+import {
+  authErrorMessage,
+  isCancelled,
+  signIn,
+  signInWithGoogle,
+  signUp,
+} from "@/firebase/auth";
 import { sampleBoard } from "@/lib/sample-board";
 
 // Only allow same-site relative redirects.
@@ -25,7 +32,8 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  // Which method is in flight, so only that button shows a spinner.
+  const [pending, setPending] = useState<"email" | "google" | null>(null);
 
   // Already signed in, or just signed in: move on.
   useEffect(() => {
@@ -35,16 +43,30 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setSubmitting(true);
+    setPending("email");
     try {
       if (isSignup) await signUp(email.trim(), password);
       else await signIn(email.trim(), password);
       toast(isSignup ? "Welcome! Your account is ready." : "Welcome back.");
     } catch (err) {
       setError(authErrorMessage(err));
-      setSubmitting(false);
+      setPending(null);
     }
   }
+
+  async function handleGoogle() {
+    setError(null);
+    setPending("google");
+    try {
+      await signInWithGoogle();
+      toast("Welcome!");
+    } catch (err) {
+      if (!isCancelled(err)) setError(authErrorMessage(err));
+      setPending(null);
+    }
+  }
+
+  const busy = !configured || pending !== null;
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
@@ -69,7 +91,30 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          {error && (
+            <p role="alert" className="mt-6 flex items-start gap-2 rounded-xl bg-danger/10 px-3 py-2.5 text-sm text-danger">
+              <LuCircleAlert size={16} className="mt-0.5 shrink-0" />
+              {error}
+            </p>
+          )}
+
+          <div className="mt-8">
+            <SocialButton
+              label="Continue with Google"
+              icon={<FcGoogle size={18} />}
+              loading={pending === "google"}
+              disabled={busy}
+              onClick={handleGoogle}
+            />
+          </div>
+
+          <div className="my-6 flex items-center gap-3 text-xs text-muted">
+            <span className="h-px flex-1 bg-line" />
+            or with email
+            <span className="h-px flex-1 bg-line" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="email" className="label">
                 Email
@@ -112,15 +157,8 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
               </div>
             </div>
 
-            {error && (
-              <p role="alert" className="flex items-start gap-2 rounded-xl bg-danger/10 px-3 py-2.5 text-sm text-danger">
-                <LuCircleAlert size={16} className="mt-0.5 shrink-0" />
-                {error}
-              </p>
-            )}
-
-            <button type="submit" disabled={!configured || submitting} className="btn-primary w-full py-3">
-              {submitting && <LuLoaderCircle size={16} className="animate-spin" />}
+            <button type="submit" disabled={busy} className="btn-primary w-full py-3">
+              {pending === "email" && <LuLoaderCircle size={16} className="animate-spin" />}
               {isSignup ? "Create account" : "Sign in"}
             </button>
           </form>
@@ -139,6 +177,27 @@ export default function AuthForm({ mode }: { mode: "signin" | "signup" }) {
 
       <AuthArt />
     </div>
+  );
+}
+
+function SocialButton({
+  label,
+  icon,
+  loading,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  loading: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className="btn-outline w-full py-3">
+      {loading ? <LuLoaderCircle size={16} className="animate-spin" /> : icon}
+      {label}
+    </button>
   );
 }
 
