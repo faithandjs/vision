@@ -1,14 +1,15 @@
 "use client";
-import { LuImages, LuLayoutGrid, LuRefreshCw } from "react-icons/lu";
+import { LuImages, LuLayoutGrid, LuNotebookPen, LuRefreshCw } from "react-icons/lu";
 import type { ViewMode } from "@/lib/types";
 
 const options = [
   { value: "cards", label: "Cards", Icon: LuLayoutGrid },
   { value: "collage", label: "Collage", Icon: LuImages },
+  { value: "journal", label: "Journal", Icon: LuNotebookPen },
 ] as const;
 
 /**
- * Cards | Collage switcher. While Cards is selected, a "Flip all" sub-button
+ * Cards | Collage | Journal switcher. While Cards is selected, a "Flip all" sub-button
  * is attached to the Cards pill.
  */
 export default function ViewSwitcher({

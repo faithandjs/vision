@@ -18,10 +18,9 @@ import {
 } from "react-icons/lu";
 import CoverImage from "@/components/CoverImage";
 import SiteHeader from "@/components/SiteHeader";
-import { useBoard } from "@/context/BoardProvider";
 import { useToast } from "@/context/ToastProvider";
 import { isHttpUrl, normalizeBoard } from "@/lib/board";
-import { draftKey, formatDraftTime, parseDraft, serializeDraft } from "@/lib/drafts";
+import { formatDraftTime, parseDraft, serializeDraft } from "@/lib/drafts";
 import { readStored, writeStored } from "@/hooks/usePersistentState";
 import type { Board } from "@/lib/types";
 
@@ -100,32 +99,74 @@ function fromDraft(d: Draft): Board {
   })!;
 }
 
-function validate(d: Draft): Errors | null {
+export type EditorKind = "board" | "journal";
+
+const COPY = {
+  board: {
+    heading: "Edit your board",
+    intro: "Give your year a name, then add a card for each thing you\u2019re working toward.",
+    home: "/",
+    back: "Back to board",
+    noun: "card",
+    nouns: "cards",
+    section: "Cards",
+    add: "Add a card",
+    titlePlaceholder: "Move every day",
+    starter: "We\u2019ve filled this in with an example board. Change anything you like, or start from scratch.",
+    saveLabel: "Save board",
+    saved: "Board saved.",
+    saveError: "Couldn\u2019t save your board. Try again.",
+  },
+  journal: {
+    heading: "Edit your journal",
+    intro: "Write down the longer view: your five-year plan, career plan, what you want to learn.",
+    home: "/journal",
+    back: "Back to journal",
+    noun: "entry",
+    nouns: "entries",
+    section: "Entries",
+    add: "Add an entry",
+    titlePlaceholder: "Five-year plan",
+    starter: "We\u2019ve filled this in with an example journal. Change anything you like, or start from scratch.",
+    saveLabel: "Save journal",
+    saved: "Journal saved.",
+    saveError: "Couldn\u2019t save your journal. Try again.",
+  },
+} as const;
+
+function validate(d: Draft, kind: EditorKind): Errors | null {
   const cards: Errors["cards"] = {};
   for (const c of d.cards) {
     const e: { title?: string; src?: string } = {};
-    if (!c.title.trim()) e.title = "Give this card a title.";
-    if (!c.src.trim()) e.src = "Add a link to an image.";
-    else if (!isHttpUrl(c.src)) e.src = "Use a full link that starts with https://";
+    if (!c.title.trim()) e.title = `Give this ${COPY[kind].noun} a title.`;
+    // The board needs images for the collage; journal entries may skip them.
+    if (!c.src.trim()) {
+      if (kind === "board") e.src = "Add a link to an image.";
+    } else if (!isHttpUrl(c.src)) e.src = "Use a full link that starts with https://";
     if (e.title || e.src) cards[c.id] = e;
   }
-  const title = d.title.trim() ? undefined : "Give your board a title.";
+  const title = kind === "journal" || d.title.trim() ? undefined : "Give your board a title.";
   return title || Object.keys(cards).length ? { title, cards } : null;
 }
 
+/** Editor for the board, or (kind="journal") for journal entries. */
 export default function BoardEditor({
-  uid,
+  kind = "board",
   initial,
   isStarter,
+  storageKey: key,
+  onSave,
 }: {
-  uid: string;
+  kind?: EditorKind;
   initial: Board;
   isStarter: boolean;
+  /** localStorage key for this editor's draft. */
+  storageKey: string;
+  onSave: (board: Board) => Promise<void>;
 }) {
+  const copy = COPY[kind];
   const router = useRouter();
   const toast = useToast();
-  const { save } = useBoard();
-  const key = draftKey(uid);
   // Pick up an unsaved draft from a previous visit, if there is one.
   // (This component only renders in the browser, after auth has loaded.)
   const [restored, setRestored] = useState(() => parseDraft(readStored(key)));
@@ -137,7 +178,7 @@ export default function BoardEditor({
 
   const dirty = useMemo(() => JSON.stringify(fromDraft(draft)) !== initialJson, [draft, initialJson]);
   // Errors only show after the first save attempt, then update live as you fix them.
-  const errors = attempted ? validate(draft) : null;
+  const errors = attempted ? validate(draft, kind) : null;
   const canSave = !saving && (dirty || isStarter);
 
   // Keep the draft in this browser as you type, so any way of leaving keeps it.
@@ -198,27 +239,27 @@ export default function BoardEditor({
 
   const startBlank = () => {
     const card = blankCard();
-    focusId.current = "board-title";
+    focusId.current = kind === "board" ? "board-title" : `card-${card.id}-title`;
     setDraft({ title: "", theme: "", cards: [card] });
     setAttempted(false);
   };
 
   async function handleSave() {
     setAttempted(true);
-    if (validate(draft)) {
+    if (validate(draft, kind)) {
       toast("Fix the highlighted fields before saving.", "error");
       requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus());
       return;
     }
     setSaving(true);
     try {
-      await save(fromDraft(draft));
+      await onSave(fromDraft(draft));
       writeStored(key, null);
-      toast("Board saved.");
-      router.push("/");
+      toast(copy.saved);
+      router.push(copy.home);
     } catch (err) {
       console.error(err);
-      toast("Couldn't save your board. Try again.", "error");
+      toast(copy.saveError, "error");
       setSaving(false);
     }
   }
@@ -230,13 +271,11 @@ export default function BoardEditor({
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 pb-40 sm:px-6">
         <div className="animate-rise py-10 sm:py-14">
-          <Link href="/" className="btn-ghost -ml-3 text-muted">
-            <LuArrowLeft size={15} /> Back to board
+          <Link href={copy.home} className="btn-ghost -ml-3 text-muted">
+            <LuArrowLeft size={15} /> {copy.back}
           </Link>
-          <h1 className="mt-4 font-display text-5xl tracking-tight sm:text-6xl">Edit your board</h1>
-          <p className="mt-2 text-muted">
-            Give your year a name, then add a card for each thing you&apos;re working toward.
-          </p>
+          <h1 className="mt-4 font-display text-5xl tracking-tight sm:text-6xl">{copy.heading}</h1>
+          <p className="mt-2 text-muted">{copy.intro}</p>
         </div>
 
         {restored && (
@@ -256,7 +295,7 @@ export default function BoardEditor({
           <div className="mb-8 flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 sm:flex-row sm:items-center">
             <LuSparkles size={18} className="shrink-0 text-accent-deep" />
             <p className="flex-1 text-sm">
-              We&apos;ve filled this in with an example board. Change anything you like, or start from scratch.
+              {copy.starter}
             </p>
             <button onClick={startBlank} className="btn-outline">
               Start blank
@@ -264,6 +303,7 @@ export default function BoardEditor({
           </div>
         )}
 
+        {kind === "board" && (
         <section className="space-y-5 rounded-3xl border border-line bg-surface p-5 sm:p-7">
           <Field label="Board title" htmlFor="board-title" error={errors?.title}>
             <input
@@ -285,11 +325,12 @@ export default function BoardEditor({
             />
           </Field>
         </section>
+        )}
 
-        <div className="mt-12 mb-4">
-          <h2 className="font-display text-3xl">Cards</h2>
+        <div className={kind === "board" ? "mt-12 mb-4" : "mb-4"}>
+          <h2 className="font-display text-3xl">{copy.section}</h2>
           <p className="text-sm text-muted">
-            {count} {count === 1 ? "card" : "cards"}
+            {count} {count === 1 ? copy.noun : copy.nouns}
           </p>
         </div>
 
@@ -304,6 +345,9 @@ export default function BoardEditor({
                 onChange={(patch) => updateCard(card.id, patch)}
                 onMove={(dir) => moveCard(card.id, dir)}
                 onRemove={() => removeCard(card.id)}
+                noun={copy.noun}
+                titlePlaceholder={copy.titlePlaceholder}
+                imageOptional={kind === "journal"}
               />
             </li>
           ))}
@@ -313,7 +357,7 @@ export default function BoardEditor({
           onClick={addCard}
           className="mt-5 flex w-full items-center justify-center gap-2 rounded-3xl border-2 border-dashed border-line py-8 text-sm font-medium text-muted transition hover:border-accent hover:text-accent-deep"
         >
-          <LuPlus size={16} /> Add a card
+          <LuPlus size={16} /> {copy.add}
         </button>
       </main>
 
@@ -333,12 +377,12 @@ export default function BoardEditor({
               Discard
             </button>
           )}
-          <Link href="/" className="btn-ghost">
+          <Link href={copy.home} className="btn-ghost">
             {dirty ? "Save as draft" : "Close"}
           </Link>
           <button onClick={handleSave} disabled={!canSave} className="btn-accent px-6">
             {saving && <LuLoaderCircle size={16} className="animate-spin" />}
-            Save board
+            {copy.saveLabel}
           </button>
         </div>
       </div>
@@ -382,6 +426,9 @@ function CardEditor({
   onChange,
   onMove,
   onRemove,
+  noun,
+  titlePlaceholder,
+  imageOptional,
 }: {
   card: DraftCard;
   index: number;
@@ -390,6 +437,9 @@ function CardEditor({
   onChange: (patch: Partial<DraftCard>) => void;
   onMove: (dir: -1 | 1) => void;
   onRemove: () => void;
+  noun: string;
+  titlePlaceholder: string;
+  imageOptional: boolean;
 }) {
   const base = `card-${card.id}`;
   return (
@@ -398,19 +448,19 @@ function CardEditor({
         <span className="grid size-7 shrink-0 place-items-center rounded-full bg-surface-muted text-xs font-semibold text-muted tabular-nums">
           {index + 1}
         </span>
-        <p className="flex-1 truncate text-sm font-medium">{card.title || "Untitled card"}</p>
-        <button className="icon-btn" disabled={index === 0} onClick={() => onMove(-1)} aria-label="Move card up">
+        <p className="flex-1 truncate text-sm font-medium">{card.title || `Untitled ${noun}`}</p>
+        <button className="icon-btn" disabled={index === 0} onClick={() => onMove(-1)} aria-label={`Move ${noun} up`}>
           <LuArrowUp size={16} />
         </button>
         <button
           className="icon-btn"
           disabled={index === count - 1}
           onClick={() => onMove(1)}
-          aria-label="Move card down"
+          aria-label={`Move ${noun} down`}
         >
           <LuArrowDown size={16} />
         </button>
-        <button className="icon-btn hover:!text-danger" onClick={onRemove} aria-label="Remove card">
+        <button className="icon-btn hover:!text-danger" onClick={onRemove} aria-label={`Remove ${noun}`}>
           <LuTrash2 size={16} />
         </button>
       </header>
@@ -429,13 +479,13 @@ function CardEditor({
               id={`${base}-title`}
               value={card.title}
               onChange={(e) => onChange({ title: e.target.value })}
-              placeholder="Move every day"
+              placeholder={titlePlaceholder}
               aria-invalid={!!errors?.title}
               className="input"
             />
           </Field>
           <Field
-            label="Image link"
+            label={imageOptional ? "Image link (optional)" : "Image link"}
             htmlFor={`${base}-src`}
             error={errors?.src}
             hint="Paste a link to any image: Pinterest, Unsplash, your own."

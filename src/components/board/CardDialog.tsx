@@ -30,7 +30,7 @@ export default function CardDialog({
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === e.currentTarget && onClose()}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(56rem,calc(100%-2rem))] overflow-y-auto rounded-3xl border-0 bg-surface p-0 text-ink shadow-2xl ring-1 ring-line md:overflow-hidden"
+      className="no-scrollbar m-auto max-h-[calc(100dvh-2rem)] w-[min(56rem,calc(100%-2rem))] overflow-y-auto rounded-3xl border-0 bg-surface p-0 text-ink shadow-2xl ring-1 ring-line md:overflow-hidden"
     >
       {card && (
         <div className="grid md:h-[min(36rem,calc(100dvh-4rem))] md:grid-cols-[1.1fr_1fr]">
@@ -44,7 +44,7 @@ export default function CardDialog({
                 <LuX size={18} />
               </button>
             </div>
-            <div className="px-6 pb-8 md:overflow-y-auto md:px-8">
+            <div className="no-scrollbar px-6 pb-8 md:overflow-y-auto md:px-8">
               <CardDetails card={card} cardIndex={index} onToggle={onToggle} />
             </div>
           </div>

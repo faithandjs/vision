@@ -4,12 +4,13 @@ import { useEffect } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthProvider";
 import { useBoard } from "@/context/BoardProvider";
+import { draftKey } from "@/lib/drafts";
 import BoardEditor from "./BoardEditor";
 
 /** Auth guard + loading state around the editor. */
 export default function EditBoard() {
   const { user, loading: authLoading } = useAuth();
-  const { board, source, loading } = useBoard();
+  const { board, source, loading, save } = useBoard();
   const router = useRouter();
 
   useEffect(() => {
@@ -29,5 +30,13 @@ export default function EditBoard() {
     );
   }
 
-  return <BoardEditor key={user.uid} uid={user.uid} initial={board} isStarter={source === "starter"} />;
+  return (
+    <BoardEditor
+      key={user.uid}
+      initial={board}
+      isStarter={source === "starter"}
+      storageKey={draftKey(user.uid)}
+      onSave={save}
+    />
+  );
 }

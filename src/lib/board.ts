@@ -1,4 +1,4 @@
-import type { Board, BoardCard, ChecklistItem } from "./types";
+import type { Board, BoardCard, ChecklistItem, Journal } from "./types";
 
 const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
@@ -10,7 +10,7 @@ function arr(v: unknown): unknown[] {
   return [];
 }
 
-function normalizeCard(raw: unknown): BoardCard | null {
+export function normalizeCard(raw: unknown): BoardCard | null {
   if (!raw || typeof raw !== "object") return null;
   const r = raw as Record<string, unknown>;
   const image = (r.image ?? {}) as Record<string, unknown>;
@@ -99,3 +99,17 @@ export function toggleChecklistItem(board: Board, cardIndex: number, itemIndex: 
 }
 
 export const isHttpUrl = (v: string) => /^https?:\/\/\S+$/i.test(v.trim());
+
+/** Like normalizeBoard, for the journal's entries. */
+export function normalizeJournal(raw: unknown): Journal | null {
+  if (!raw || typeof raw !== "object") return null;
+  const entries = arr((raw as Record<string, unknown>).entries)
+    .map(normalizeCard)
+    .filter((c): c is BoardCard => c !== null);
+  return { entries };
+}
+
+// The editor and checklist helpers work on a Board; a journal is just a board
+// without a title or theme.
+export const journalToBoard = (j: Journal): Board => ({ title: "", theme: "", data: j.entries });
+export const boardToJournal = (b: Board): Journal => ({ entries: b.data });

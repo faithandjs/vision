@@ -31,12 +31,12 @@ export function BoardHero({ board }: { board: Board }) {
   );
 }
 
-export function SourceNotice({ source }: { source: BoardSource }) {
+export function SourceNotice({ source, kind = "board" }: { source: BoardSource; kind?: "board" | "journal" }) {
   if (source === "saved") return null;
   const [text, cta, href] =
     source === "sample"
-      ? ["You're looking at an example board.", "Create your own", "/signup"]
-      : ["This example is here to get you started.", "Make it yours", "/edit"];
+      ? [`You're looking at an example ${kind}.`, "Create your own", "/signup"]
+      : ["This example is here to get you started.", "Make it yours", kind === "board" ? "/edit" : "/journal/edit"];
   return (
     <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-3xl border border-line bg-surface/70 py-1.5 pr-1.5 pl-4 text-sm backdrop-blur sm:rounded-full">
       <LuSparkles size={15} className="shrink-0 text-accent-deep" />
@@ -48,12 +48,12 @@ export function SourceNotice({ source }: { source: BoardSource }) {
   );
 }
 
-export function DraftNotice() {
+export function DraftNotice({ href = "/edit" }: { href?: string }) {
   return (
     <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-3xl border border-accent/60 bg-accent/15 py-1.5 pr-1.5 pl-4 text-sm sm:rounded-full">
       <LuFilePen size={15} className="shrink-0 text-accent-deep" />
       <span>You have an unsaved draft.</span>
-      <Link href="/edit" className="btn-accent py-1.5">
+      <Link href={href} className="btn-accent py-1.5">
         Continue editing <LuArrowRight size={14} />
       </Link>
     </div>

@@ -5,6 +5,7 @@ import type { Board } from "./types";
 // editor (Cancel, Back, closing the tab) never loses it.
 
 export const draftKey = (uid: string) => `vb-draft:${uid}`;
+export const journalDraftKey = (uid: string) => `vb-journal-draft:${uid}`;
 
 export interface StoredDraft {
   savedAt: number;

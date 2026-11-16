@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import CardDialog from "@/components/board/CardDialog";
 import CollageStudio from "@/components/board/CollageStudio";
@@ -11,13 +12,20 @@ import { useBoard } from "@/context/BoardProvider";
 import { useStored } from "@/hooks/usePersistentState";
 import { draftKey, parseDraft } from "@/lib/drafts";
 import type { ViewMode } from "@/lib/types";
+import { clearPendingView, peekPendingView } from "@/lib/view-nav";
 
 export default function BoardPage() {
   const { board, source, loading, toggleCheck } = useBoard();
   const { user } = useAuth();
   const hasDraft = parseDraft(useStored(user ? draftKey(user.uid) : "vb-draft:none")) !== null;
-  // Always open on Cards; the view isn't remembered, so there's no flip after load.
-  const [view, setView] = useState<ViewMode>("cards");
+  const router = useRouter();
+  // Open on Cards, unless the Journal page just sent us to Collage. That hint only
+  // exists during client navigation, so a full load always renders Cards (no flip).
+  const [view, setView] = useState<Exclude<ViewMode, "journal">>(() =>
+    peekPendingView() === "collage" ? "collage" : "cards",
+  );
+  useEffect(() => clearPendingView(), []);
+  const changeView = (v: ViewMode) => (v === "journal" ? router.push("/journal") : setView(v));
   const [flipped, setFlipped] = useState<ReadonlySet<number>>(new Set());
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
@@ -41,7 +49,7 @@ export default function BoardPage() {
       <SiteHeader>
         <ViewSwitcher
           value={view}
-          onChange={setView}
+          onChange={changeView}
           flip={count > 0 ? { allFlipped, onToggle: flipAll } : undefined}
         />
       </SiteHeader>
