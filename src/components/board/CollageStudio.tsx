@@ -155,7 +155,7 @@ export default function CollageStudio({ board, onOpenCard }: { board: Board; onO
       <div aria-hidden className={expanded ? "h-72 sm:h-48" : "h-24"} />
 
       <div className="fixed inset-x-0 bottom-0 z-30 px-3 pb-3">
-        <div className="mx-auto max-h-[55dvh] max-w-6xl overflow-y-auto rounded-3xl border border-line bg-surface/90 p-3 shadow-2xl shadow-black/15 backdrop-blur-xl sm:p-4">
+        <div className="no-scrollbar mx-auto max-h-[55dvh] max-w-6xl overflow-y-auto rounded-3xl border border-line bg-surface/90 p-3 shadow-2xl shadow-black/15 backdrop-blur-xl sm:p-4">
           {/* Row 1: size, what to show, download */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
             <Segmented
