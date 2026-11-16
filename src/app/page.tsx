@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { LuRefreshCw } from "react-icons/lu";
 import CardDialog from "@/components/board/CardDialog";
 import CollageStudio from "@/components/board/CollageStudio";
 import FlipCard from "@/components/board/FlipCard";
@@ -40,13 +39,11 @@ export default function BoardPage() {
   return (
     <>
       <SiteHeader>
-        {view === "cards" && count > 0 && (
-          <button onClick={flipAll} className="btn-ghost" aria-label={allFlipped ? "Show fronts" : "Flip all cards"}>
-            <LuRefreshCw size={15} />
-            <span className="hidden md:inline">{allFlipped ? "Show fronts" : "Flip all"}</span>
-          </button>
-        )}
-        <ViewSwitcher value={view} onChange={setView} />
+        <ViewSwitcher
+          value={view}
+          onChange={setView}
+          flip={count > 0 ? { allFlipped, onToggle: flipAll } : undefined}
+        />
       </SiteHeader>
 
       <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
