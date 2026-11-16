@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { LuRefreshCw } from "react-icons/lu";
 import CardDialog from "@/components/board/CardDialog";
-import CollageView from "@/components/board/CollageView";
+import CollageStudio from "@/components/board/CollageStudio";
 import FlipCard from "@/components/board/FlipCard";
 import ViewSwitcher from "@/components/board/ViewSwitcher";
 import { BoardHero, BoardSkeleton, EmptyBoard, SourceNotice } from "@/components/board/BoardParts";
@@ -51,12 +51,13 @@ export default function BoardPage() {
           <BoardSkeleton />
         ) : (
           <>
-            <BoardHero board={board} />
+            {/* In collage view the image itself carries the title. */}
+            {view === "cards" || count === 0 ? <BoardHero board={board} /> : <div className="h-8" />}
             <SourceNotice source={source} />
             {count === 0 ? (
               <EmptyBoard />
             ) : view === "collage" ? (
-              <CollageView cards={board.data} onOpen={setOpenIndex} />
+              <CollageStudio board={board} onOpenCard={setOpenIndex} />
             ) : (
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {board.data.map((card, i) => (
