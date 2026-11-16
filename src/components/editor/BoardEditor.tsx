@@ -223,7 +223,7 @@ export default function BoardEditor({ initial, isStarter }: { initial: Board; is
               onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
               placeholder="The Year of Becoming"
               aria-invalid={!!errors?.title}
-              className="input font-display !text-2xl"
+              className="input font-script !text-4xl !py-1.5"
             />
           </Field>
           <Field label="Theme or mantra" htmlFor="board-theme" hint="One line that sums up the year.">

@@ -46,8 +46,10 @@
   --color-accent-deep: var(--accent-deep);
   --color-success: var(--success);
   --color-danger: var(--danger);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans-ui), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-serif), ui-serif, Georgia, serif;
+  --font-script: var(--font-script-face), "Snell Roundhand", cursive;
+  --font-logo: var(--font-logo-face), ui-rounded, system-ui, sans-serif;
 }
 
 @layer base {
@@ -102,6 +104,12 @@
 }
 @utility eyebrow {
   @apply text-xs font-medium tracking-[0.2em] text-muted uppercase;
+}
+
+/* Cormorant is delicate at its regular weight; give display text more body.
+   Unlayered so it applies wherever the font-display utility is used. */
+.font-display {
+  font-weight: 500;
 }
 
 /* 3D flip cards */

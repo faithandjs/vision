@@ -7,14 +7,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { useTheme } from "@/context/ThemeProvider";
 import { useToast } from "@/context/ToastProvider";
 import { signOut } from "@/firebase/auth";
-
-export function Logo() {
-  return (
-    <Link href="/" className="font-display text-2xl tracking-tight">
-      Vision<span className="text-accent">.</span>
-    </Link>
-  );
-}
+import Logo from "./Logo";
 
 export default function SiteHeader({ children }: { children?: React.ReactNode }) {
   return (

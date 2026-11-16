@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { LuCircleAlert, LuEye, LuEyeOff, LuLoaderCircle } from "react-icons/lu";
 import CoverImage from "@/components/CoverImage";
-import { Logo } from "@/components/SiteHeader";
+import Logo from "@/components/Logo";
 import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
 import {
