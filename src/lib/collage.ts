@@ -209,7 +209,7 @@ export function renderCollage(
   if (canvas.width !== W) canvas.width = W;
   if (canvas.height !== H) canvas.height = H;
   const ctx = canvas.getContext("2d")!;
-  const { serif, sans } = fonts;
+  const { serif } = fonts;
 
   const unit = Math.min(W, H) / 1080; // scale everything to the canvas
   const gap = o.borders ? o.borderWidth * unit : 0;
@@ -230,7 +230,6 @@ export function renderCollage(
   const innerW = plaqueW - 110 * s;
   let titleSize = 110 * s;
   const themeSize = 36 * s;
-  const eyebrowSize = 20 * s;
 
   if (title || theme) {
     if (title) {
@@ -246,9 +245,9 @@ export function renderCollage(
       themeLines = wrap(ctx, theme, innerW).slice(0, 4);
     }
     const contentH =
-      eyebrowSize +
-      (titleLines.length ? 28 * s + titleLines.length * titleSize * 1.05 : 0) +
-      (themeLines.length ? 28 * s + themeLines.length * themeSize * 1.3 : 0);
+      titleLines.length * titleSize * 1.05 +
+      (titleLines.length && themeLines.length ? 28 * s : 0) +
+      themeLines.length * themeSize * 1.3;
     const plaqueH = contentH + 100 * s;
     plaque = { x: (W - plaqueW) / 2, y: (H - plaqueH) / 2, w: plaqueW, h: plaqueH };
   }
@@ -337,16 +336,9 @@ export function renderCollage(
     ctx.textAlign = "center";
     ctx.textBaseline = "alphabetic";
     const cx = W / 2;
-    let y = plaque.y + 50 * s + eyebrowSize;
-
-    ctx.fillStyle = colors.muted;
-    ctx.font = `500 ${eyebrowSize}px ${sans}`;
-    ctx.letterSpacing = `${6 * s}px`;
-    ctx.fillText("VISION BOARD", cx, y);
-    ctx.letterSpacing = "0px";
+    let y = plaque.y + 50 * s;
 
     if (titleLines.length) {
-      y += 28 * s;
       ctx.fillStyle = colors.ink;
       ctx.font = `${titleSize}px ${serif}`;
       const lh = titleSize * 1.05;
@@ -356,7 +348,7 @@ export function renderCollage(
       }
     }
     if (themeLines.length) {
-      y += 28 * s;
+      if (titleLines.length) y += 28 * s;
       ctx.fillStyle = colors.muted;
       ctx.font = `italic ${themeSize}px ${serif}`;
       const lh = themeSize * 1.3;

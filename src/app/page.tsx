@@ -9,22 +9,21 @@ import { BoardHero, BoardSkeleton, DraftNotice, EmptyBoard, SourceNotice } from 
 import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthProvider";
 import { useBoard } from "@/context/BoardProvider";
-import { usePersistentState, useStored } from "@/hooks/usePersistentState";
+import { useStored } from "@/hooks/usePersistentState";
 import { draftKey, parseDraft } from "@/lib/drafts";
 import type { ViewMode } from "@/lib/types";
-
-const VIEWS: readonly ViewMode[] = ["collage", "cards"];
 
 export default function BoardPage() {
   const { board, source, loading, toggleCheck } = useBoard();
   const { user } = useAuth();
   const hasDraft = parseDraft(useStored(user ? draftKey(user.uid) : "vb-draft:none")) !== null;
-  const [view, setView] = usePersistentState<ViewMode>("vb-view", "collage", VIEWS);
+  // Always open on Cards; the view isn't remembered, so there's no flip after load.
+  const [view, setView] = useState<ViewMode>("cards");
   const [flipped, setFlipped] = useState<ReadonlySet<number>>(new Set());
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    document.title = board.title ? `${board.title} · Vision Board` : "Vision Board";
+    document.title = board.title ? `${board.title} · enVision` : "enVision";
   }, [board.title]);
 
   const count = board.data.length;

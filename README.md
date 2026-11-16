@@ -1,4 +1,4 @@
-# Vision Board
+# enVision
 
 A personal vision board. Pin a picture for each thing you're working toward this year, add notes, lists and checklists, and tick items off as you go.
 

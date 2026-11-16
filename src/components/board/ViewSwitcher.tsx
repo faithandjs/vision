@@ -3,8 +3,8 @@ import { LuImages, LuLayoutGrid } from "react-icons/lu";
 import type { ViewMode } from "@/lib/types";
 
 const options = [
-  { value: "collage", label: "Collage", Icon: LuImages },
   { value: "cards", label: "Cards", Icon: LuLayoutGrid },
+  { value: "collage", label: "Collage", Icon: LuImages },
 ] as const;
 
 export default function ViewSwitcher({ value, onChange }: { value: ViewMode; onChange: (v: ViewMode) => void }) {

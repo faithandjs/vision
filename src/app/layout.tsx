@@ -13,7 +13,7 @@ const serif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Vision Board", template: "%s · Vision Board" },
+  title: { default: "enVision", template: "%s · enVision" },
   description: "Pin your goals, picture them, and check them off as the year unfolds.",
 };
 
