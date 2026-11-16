@@ -2,8 +2,13 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Color tokens. Sage & Cream is the default; other pastel palettes apply via
+   <html data-palette="…">, set before paint by the theme init script.
+   accent-deep is the text-safe accent; accent-on-ink is the accent on the
+   ink-colored (selected) pill. All text pairs meet WCAG AA. */
+
 :root {
-  /* Brand: sage #9ca764 and cream #f1e8c7 */
+  /* Sage & Cream */
   --bg: #f1e8c7;
   --surface: #f9f4e3;
   --surface-muted: #e6dbb4;
@@ -12,9 +17,7 @@
   --line: rgb(38 42 26 / 0.12);
   --accent: #9ca764;
   --accent-ink: #1d2112;
-  /* Sage is too light for text on cream; use this for text, borders, focus. */
   --accent-deep: #5b6830;
-  /* Sage that reads on the ink-colored (selected) pill. */
   --accent-on-ink: #b4c27a;
   --success: #6f8238;
   --danger: #b23a2a;
@@ -35,6 +38,171 @@
   --success: #a9b86e;
   --danger: #f08070;
   --glow: rgb(156 167 100 / 0.1);
+}
+
+:root[data-palette="blush"] {
+  /* Blush & Ivory */
+  --bg: #fcf1ef;
+  --surface: #fff9f7;
+  --surface-muted: #f4dfdc;
+  --ink: #3a2427;
+  --muted: #7a5a5f;
+  --line: rgb(58 36 39 / 0.12);
+  --accent: #eaa9b2;
+  --accent-ink: #3a1e23;
+  --accent-deep: #a0465a;
+  --accent-on-ink: #f2bcc4;
+  --success: #a0465a;
+  --danger: #b23a2a;
+  --glow: rgb(234 169 178 / 0.22);
+}
+
+:root.dark[data-palette="blush"] {
+  --bg: #1d1416;
+  --surface: #271b1e;
+  --surface-muted: #33242a;
+  --ink: #fbe9ea;
+  --muted: #c4a8ac;
+  --line: rgb(251 233 234 / 0.1);
+  --accent: #eaa9b2;
+  --accent-ink: #1d1416;
+  --accent-deep: #f2bcc4;
+  --accent-on-ink: #a0465a;
+  --success: #f2bcc4;
+  --danger: #f08070;
+  --glow: rgb(234 169 178 / 0.1);
+}
+
+:root[data-palette="lavender"] {
+  /* Lavender & Mist */
+  --bg: #f4f1fb;
+  --surface: #fbf9ff;
+  --surface-muted: #e6e0f5;
+  --ink: #2a2540;
+  --muted: #665f82;
+  --line: rgb(42 37 64 / 0.12);
+  --accent: #bcabe8;
+  --accent-ink: #241c40;
+  --accent-deep: #6a4fb3;
+  --accent-on-ink: #cbbdf1;
+  --success: #6a4fb3;
+  --danger: #b23a2a;
+  --glow: rgb(188 171 232 / 0.22);
+}
+
+:root.dark[data-palette="lavender"] {
+  --bg: #16131f;
+  --surface: #1f1b2b;
+  --surface-muted: #2a2539;
+  --ink: #efeafc;
+  --muted: #b2aac9;
+  --line: rgb(239 234 252 / 0.1);
+  --accent: #bcabe8;
+  --accent-ink: #16131f;
+  --accent-deep: #d0c3f4;
+  --accent-on-ink: #6a4fb3;
+  --success: #d0c3f4;
+  --danger: #f08070;
+  --glow: rgb(188 171 232 / 0.1);
+}
+
+:root[data-palette="sky"] {
+  /* Sky & Cloud */
+  --bg: #eef5fa;
+  --surface: #f8fbfd;
+  --surface-muted: #dbe8f1;
+  --ink: #1e2a35;
+  --muted: #566878;
+  --line: rgb(30 42 53 / 0.12);
+  --accent: #a3cdea;
+  --accent-ink: #13283a;
+  --accent-deep: #2c6a94;
+  --accent-on-ink: #addaf3;
+  --success: #2c6a94;
+  --danger: #b23a2a;
+  --glow: rgb(163 205 234 / 0.22);
+}
+
+:root.dark[data-palette="sky"] {
+  --bg: #10171d;
+  --surface: #172028;
+  --surface-muted: #212c36;
+  --ink: #e8f2f9;
+  --muted: #a6b8c6;
+  --line: rgb(232 242 249 / 0.1);
+  --accent: #a3cdea;
+  --accent-ink: #10171d;
+  --accent-deep: #bcddf3;
+  --accent-on-ink: #2c6a94;
+  --success: #bcddf3;
+  --danger: #f08070;
+  --glow: rgb(163 205 234 / 0.1);
+}
+
+:root[data-palette="peach"] {
+  /* Peach & Sand */
+  --bg: #fcf2e8;
+  --surface: #fff9f3;
+  --surface-muted: #f3e1cf;
+  --ink: #3a271b;
+  --muted: #7a5f4f;
+  --line: rgb(58 39 27 / 0.12);
+  --accent: #f4ba98;
+  --accent-ink: #3a1f10;
+  --accent-deep: #9e5328;
+  --accent-on-ink: #f6c6a8;
+  --success: #9e5328;
+  --danger: #b23a2a;
+  --glow: rgb(244 186 152 / 0.22);
+}
+
+:root.dark[data-palette="peach"] {
+  --bg: #1c1510;
+  --surface: #261d16;
+  --surface-muted: #32271e;
+  --ink: #fbefe4;
+  --muted: #c9b19e;
+  --line: rgb(251 239 228 / 0.1);
+  --accent: #f4ba98;
+  --accent-ink: #1c1510;
+  --accent-deep: #f7cdb3;
+  --accent-on-ink: #9e5328;
+  --success: #f7cdb3;
+  --danger: #f08070;
+  --glow: rgb(244 186 152 / 0.1);
+}
+
+:root[data-palette="mint"] {
+  /* Mint & Linen */
+  --bg: #eef7f2;
+  --surface: #f8fcfa;
+  --surface-muted: #dbece3;
+  --ink: #1d2e27;
+  --muted: #536c61;
+  --line: rgb(29 46 39 / 0.12);
+  --accent: #a5dac5;
+  --accent-ink: #12302a;
+  --accent-deep: #2b725b;
+  --accent-on-ink: #b0e1cd;
+  --success: #2b725b;
+  --danger: #b23a2a;
+  --glow: rgb(165 218 197 / 0.22);
+}
+
+:root.dark[data-palette="mint"] {
+  --bg: #101a16;
+  --surface: #17231e;
+  --surface-muted: #212f29;
+  --ink: #e9f6f0;
+  --muted: #a4c0b4;
+  --line: rgb(233 246 240 / 0.1);
+  --accent: #a5dac5;
+  --accent-ink: #101a16;
+  --accent-deep: #c0e7d7;
+  --accent-on-ink: #2b725b;
+  --success: #c0e7d7;
+  --danger: #f08070;
+  --glow: rgb(165 218 197 / 0.1);
 }
 
 @theme inline {
