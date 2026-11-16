@@ -1,11 +1,7 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getDatabase } from "firebase/database";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getDatabase, type Database } from "firebase/database";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,12 +9,21 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  // Needed for Realtime Database instances outside the default US region.
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || undefined,
 };
 
-// Initialize Firebase
-// let firebase_app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
+/** False when env vars are missing, so the app can run in sample-only mode. */
+export const isFirebaseConfigured = Boolean(
+  firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId && firebaseConfig.appId,
+);
 
-export { auth, database };
+// Initialized lazily (and only in the browser) so that building or
+// prerendering without credentials doesn't crash with auth/invalid-api-key.
+function app(): FirebaseApp {
+  if (!isFirebaseConfigured) throw new Error("Firebase is not configured. See .env.example.");
+  return getApps().length ? getApp() : initializeApp(firebaseConfig);
+}
+
+export const firebaseAuth = (): Auth => getAuth(app());
+export const firebaseDb = (): Database => getDatabase(app());

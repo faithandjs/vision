@@ -1,132 +1,86 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Form, Formik } from "formik";
+import { useEffect, useState } from "react";
+import { LuRefreshCw } from "react-icons/lu";
+import CardDialog from "@/components/board/CardDialog";
+import CollageView from "@/components/board/CollageView";
+import FlipCard from "@/components/board/FlipCard";
+import ViewSwitcher from "@/components/board/ViewSwitcher";
+import { BoardHero, BoardSkeleton, EmptyBoard, SourceNotice } from "@/components/board/BoardParts";
+import SiteHeader from "@/components/SiteHeader";
+import { useBoard } from "@/context/BoardProvider";
+import { usePersistentState } from "@/hooks/usePersistentState";
+import type { ViewMode } from "@/lib/types";
 
-import Toggle from "@/components/Toggle";
-import { Menu } from "@/components";
+const VIEWS: readonly ViewMode[] = ["collage", "cards"];
 
-import "@/styles/global.scss";
-import "@/styles/grid.scss";
-import "@/styles/theme.scss";
-import "@/styles/vision-board.scss";
+export default function BoardPage() {
+  const { board, source, loading, toggleCheck } = useBoard();
+  const [view, setView] = usePersistentState<ViewMode>("vb-view", "collage", VIEWS);
+  const [flipped, setFlipped] = useState<ReadonlySet<number>>(new Set());
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
-import { useToggleCtx } from "@/context/ToggleCtx";
-import { useAuthCtx } from "@/context/AuthCtx";
-import Card from "@/components/card";
-
-export default function Board() {
-  const { states } = useToggleCtx();
-  const { board } = useAuthCtx();
-  const [active, setActive] = useState(-1);
-  const { vision_board } = states;
-  // console.log(board.data);
   useEffect(() => {
-    window.scrollTo(0, 0);
-    if (vision_board) {
-      document.body.classList.add("vision-body");
-    } else {
-      document.body.classList.remove("vision-body");
-    }
-  }, [vision_board]);
+    document.title = board.title ? `${board.title} · Vision Board` : "Vision Board";
+  }, [board.title]);
+
+  const count = board.data.length;
+  const allFlipped = count > 0 && flipped.size === count;
+  const flipAll = () => setFlipped(allFlipped ? new Set() : new Set(board.data.map((_, i) => i)));
+  const flipOne = (i: number) =>
+    setFlipped((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
 
   return (
     <>
-      <div
-        className={
-          "md:px-6 py-10  " +
-          (states.vision_board
-            ? "vision-board "
-            : "not-vision-board border-8 border-[#2f2f2f] border-double ")
-        }
-      >
-        <div className="flex items-center">
-          <div
-            className={
-              "z-20 relative  transition-[transform] duration-700 py-4  flex w-full flex-col text-center " +
-              (states.vision_board
-                ? "text-white   absolute inset-0 translate-y-[40vh]"
-                : "  delay-150 ")
-            }
-          >
-            <h1 className={"font-deraga font-thin  text-5xl "}>
-              {board.title}
-            </h1>
-            <p className={"font-alexander font-medium text-xl pb-4  "}>
-              {board.theme}
-            </p>
-          </div>
-          <Menu />
-        </div>
+      <SiteHeader>
+        {view === "cards" && count > 0 && (
+          <button onClick={flipAll} className="btn-ghost" aria-label={allFlipped ? "Show fronts" : "Flip all cards"}>
+            <LuRefreshCw size={15} />
+            <span className="hidden md:inline">{allFlipped ? "Show fronts" : "Flip all"}</span>
+          </button>
+        )}
+        <ViewSwitcher value={view} onChange={setView} />
+      </SiteHeader>
 
-        {/* cards */}
-        <Formik
-          initialValues={{ data: board.data }}
-          onSubmit={() => {}}
-          enableReinitialize
-        >
-          {({ values, setFieldValue, handleChange }) => {
-            return (
-              <Form>
-                <div className="cards flex justify-center child:shrink-0 flex-wrap  transition-[transform] duration-700">
-                  {values.data.map((item, key) => {
-                    // console.log(item);
-                    return item ? (
-                      <Card
-                        {...{
-                          active,
-                          setActive,
-                          ...item,
-                          setFieldValue,
-                          handleChange,
-                          values,
-                        }}
-                        key={key}
-                        id={key}
-                      />
-                    ) : (
-                      <></>
-                    );
-                  })}
-                </div>
-              </Form>
-            );
-          }}
-        </Formik>
-        {/* grid */}
-        <div
-          className={
-            "grid transition-[transform] duration-700 absolute inset-0 w-full h-screen  brightness-75 grid-" +
-            board.data.length
-          }
-        >
-          {board.data.map((item: any, key: number) => {
-            return item ? (
-              <div
-                key={key}
-                className={`grid-item${key + 1}`}
-                style={{ backgroundImage: `url(${item.image.src})` }}
-              ></div>
+      <main className="mx-auto max-w-7xl px-4 pb-24 sm:px-6 lg:px-8">
+        {loading ? (
+          <BoardSkeleton />
+        ) : (
+          <>
+            <BoardHero board={board} />
+            <SourceNotice source={source} />
+            {count === 0 ? (
+              <EmptyBoard />
+            ) : view === "collage" ? (
+              <CollageView cards={board.data} onOpen={setOpenIndex} />
             ) : (
-              <></>
-            );
-          })}
-        </div>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {board.data.map((card, i) => (
+                  <FlipCard
+                    key={i}
+                    card={card}
+                    index={i}
+                    flipped={flipped.has(i)}
+                    onFlip={() => flipOne(i)}
+                    onToggle={toggleCheck}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </main>
 
-        <div className="fixed bottom-0 left-0 w-full flex justify-between px-5 pb-4 z-20">
-          <Toggle
-            label="vision board"
-            position="bottom"
-            checked={states.vision_board}
-          />
-          <Toggle
-            label="flip all"
-            position="top"
-            checked={states.flip_all}
-            disabled={states.vision_board}
-            className={states.vision_board ? "opacity-0" : "opacity-100"}
-          />
-        </div>
-      </div>
+      <CardDialog
+        card={openIndex !== null ? (board.data[openIndex] ?? null) : null}
+        index={openIndex ?? 0}
+        onClose={() => setOpenIndex(null)}
+        onToggle={toggleCheck}
+      />
     </>
   );
 }
