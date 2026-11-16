@@ -1,33 +1,37 @@
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter, Instrument_Serif } from "next/font/google";
+import Providers from "@/context/Providers";
+import { themeInitScript } from "@/context/ThemeProvider";
 import "./globals.css";
-import ContextManager from "@/context";
 
-// Load the Inter font with 'latin' subset
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+});
 
-// Metadata for the application
-export const metadata = {
-  title: "Next.js + Firebase Starter",
-  description: "Template to use Next.js with Firebase",
+export const metadata: Metadata = {
+  title: { default: "Vision Board", template: "%s · Vision Board" },
+  description: "Pin your goals, picture them, and check them off as the year unfolds.",
 };
 
-// Root layout component for the application
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f4ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#11100e" },
+  ],
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      {/*
-        The <head /> component will contain the components returned by the nearest parent
-        head.js. It can be used to define the document head for SEO, metadata, and other purposes.
-        Learn more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
-      */}
-      <head />
+    <html lang="en" className={`${inter.variable} ${serif.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body>
-        {/* Wrap the children with the AuthContextProvider to provide authentication context */}
-        <ContextManager>{children}</ContextManager>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
