@@ -6,6 +6,8 @@ import {
   LuArrowDown,
   LuArrowLeft,
   LuArrowUp,
+  LuCheck,
+  LuHistory,
   LuList,
   LuListChecks,
   LuLoaderCircle,
@@ -19,6 +21,8 @@ import SiteHeader from "@/components/SiteHeader";
 import { useBoard } from "@/context/BoardProvider";
 import { useToast } from "@/context/ToastProvider";
 import { isHttpUrl, normalizeBoard } from "@/lib/board";
+import { draftKey, formatDraftTime, parseDraft, serializeDraft } from "@/lib/drafts";
+import { readStored, writeStored } from "@/hooks/usePersistentState";
 import type { Board } from "@/lib/types";
 
 // Editor-only shape: every card and line gets a stable id so React keys and
@@ -49,8 +53,8 @@ interface Errors {
   cards: Record<string, { title?: string; src?: string }>;
 }
 
-let seq = 0;
-const newId = () => `k${++seq}`;
+// Random (not sequential) so ids never collide with ones from a restored draft.
+const newId = () => `k${Math.random().toString(36).slice(2, 10)}`;
 const item = (value = "", checked = false): DraftItem => ({ id: newId(), value, checked });
 const blankCard = (): DraftCard => ({
   id: newId(),
@@ -109,11 +113,23 @@ function validate(d: Draft): Errors | null {
   return title || Object.keys(cards).length ? { title, cards } : null;
 }
 
-export default function BoardEditor({ initial, isStarter }: { initial: Board; isStarter: boolean }) {
+export default function BoardEditor({
+  uid,
+  initial,
+  isStarter,
+}: {
+  uid: string;
+  initial: Board;
+  isStarter: boolean;
+}) {
   const router = useRouter();
   const toast = useToast();
   const { save } = useBoard();
-  const [draft, setDraft] = useState(() => toDraft(initial));
+  const key = draftKey(uid);
+  // Pick up an unsaved draft from a previous visit, if there is one.
+  // (This component only renders in the browser, after auth has loaded.)
+  const [restored, setRestored] = useState(() => parseDraft(readStored(key)));
+  const [draft, setDraft] = useState(() => toDraft(restored?.board ?? initial));
   const [initialJson] = useState(() => JSON.stringify(normalizeBoard(initial)));
   const [attempted, setAttempted] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -124,12 +140,31 @@ export default function BoardEditor({ initial, isStarter }: { initial: Board; is
   const errors = attempted ? validate(draft) : null;
   const canSave = !saving && (dirty || isStarter);
 
+  // Keep the draft in this browser as you type, so any way of leaving keeps it.
+  // Editing back to exactly the saved board removes the draft.
+  const draftJson = useMemo(() => JSON.stringify(fromDraft(draft)), [draft]);
   useEffect(() => {
-    if (!dirty || saving) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty, saving]);
+    if (saving) return;
+    const stored = readStored(key);
+    if (!dirty) {
+      if (stored !== null) writeStored(key, null);
+      return;
+    }
+    // Only rewrite (and re-timestamp) when the content actually changed.
+    const current = parseDraft(stored);
+    if (!current || JSON.stringify(current.board) !== draftJson) {
+      writeStored(key, serializeDraft(JSON.parse(draftJson)));
+    }
+  }, [key, draftJson, dirty, saving]);
+
+  const discardDraft = () => {
+    if (!window.confirm("Discard your draft? Your saved board stays as it is.")) return;
+    writeStored(key, null);
+    setDraft(toDraft(initial));
+    setRestored(null);
+    setAttempted(false);
+    toast("Draft discarded.");
+  };
 
   // Focus a newly added card's title field once it has rendered.
   useEffect(() => {
@@ -178,6 +213,7 @@ export default function BoardEditor({ initial, isStarter }: { initial: Board; is
     setSaving(true);
     try {
       await save(fromDraft(draft));
+      writeStored(key, null);
       toast("Board saved.");
       router.push("/");
     } catch (err) {
@@ -203,7 +239,20 @@ export default function BoardEditor({ initial, isStarter }: { initial: Board; is
           </p>
         </div>
 
-        {isStarter && (
+        {restored && (
+          <div className="mb-8 flex flex-col gap-3 rounded-2xl border border-accent/60 bg-accent/15 p-4 sm:flex-row sm:items-center">
+            <LuHistory size={18} className="shrink-0 text-accent-deep" />
+            <p className="flex-1 text-sm">
+              Picked up your draft from {formatDraftTime(restored.savedAt)}. It isn&apos;t on your board until you
+              save.
+            </p>
+            <button onClick={discardDraft} className="btn-outline">
+              Discard draft
+            </button>
+          </div>
+        )}
+
+        {isStarter && !restored && (
           <div className="mb-8 flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 sm:flex-row sm:items-center">
             <LuSparkles size={18} className="shrink-0 text-accent-deep" />
             <p className="flex-1 text-sm">
@@ -270,9 +319,22 @@ export default function BoardEditor({ initial, isStarter }: { initial: Board; is
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-3 sm:px-6">
-          <p className="flex-1 text-sm text-muted">{dirty ? "Unsaved changes" : "No changes yet"}</p>
+          <p className="flex flex-1 items-center gap-1.5 text-sm text-muted">
+            {dirty ? (
+              <>
+                <LuCheck size={15} className="text-accent-deep" /> Draft saved
+              </>
+            ) : (
+              "No changes yet"
+            )}
+          </p>
+          {dirty && (
+            <button onClick={discardDraft} className="btn-ghost hidden text-muted sm:inline-flex">
+              Discard
+            </button>
+          )}
           <Link href="/" className="btn-ghost">
-            Cancel
+            {dirty ? "Save as draft" : "Close"}
           </Link>
           <button onClick={handleSave} disabled={!canSave} className="btn-accent px-6">
             {saving && <LuLoaderCircle size={16} className="animate-spin" />}

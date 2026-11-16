@@ -29,5 +29,5 @@ export default function EditBoard() {
     );
   }
 
-  return <BoardEditor key={user.uid} initial={board} isStarter={source === "starter"} />;
+  return <BoardEditor key={user.uid} uid={user.uid} initial={board} isStarter={source === "starter"} />;
 }
