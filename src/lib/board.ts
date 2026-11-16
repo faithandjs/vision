@@ -1,4 +1,4 @@
-import type { Board, BoardCard, ChecklistItem, Journal } from "./types";
+import type { Board, BoardCard, ChecklistItem, Journal, JournalEntry } from "./types";
 
 const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
@@ -100,16 +100,66 @@ export function toggleChecklistItem(board: Board, cardIndex: number, itemIndex: 
 
 export const isHttpUrl = (v: string) => /^https?:\/\/\S+$/i.test(v.trim());
 
-/** Like normalizeBoard, for the journal's entries. */
-export function normalizeJournal(raw: unknown): Journal | null {
-  if (!raw || typeof raw !== "object") return null;
-  const entries = arr((raw as Record<string, unknown>).entries)
-    .map(normalizeCard)
-    .filter((c): c is BoardCard => c !== null);
-  return { entries };
+export const isIsoDate = (v: unknown): v is string =>
+  typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+
+/** A journal entry from untrusted data. `key` is its database key, used as the id. */
+export function normalizeEntry(raw: unknown, key: string): JournalEntry | null {
+  const card = normalizeCard(raw);
+  if (!card) return null;
+  const r = raw as Record<string, unknown>;
+  const id = typeof r.id === "string" && r.id ? r.id : key;
+  return { ...card, id, date: isIsoDate(r.date) ? r.date : "" };
 }
 
-// The editor and checklist helpers work on a Board; a journal is just a board
-// without a title or theme.
-export const journalToBoard = (j: Journal): Board => ({ title: "", theme: "", data: j.entries });
-export const boardToJournal = (b: Board): Journal => ({ entries: b.data });
+/** Newest first; undated entries last. */
+export const sortEntries = (entries: JournalEntry[]) =>
+  [...entries].sort((a, b) => (b.date || "").localeCompare(a.date || "") || a.id.localeCompare(b.id));
+
+/**
+ * Entries are stored keyed by id (users/{uid}/journal/entries/{id}). Older saves
+ * stored an array, whose indices ("0", "1"…) simply become the ids.
+ */
+export function normalizeJournal(raw: unknown): Journal | null {
+  if (!raw || typeof raw !== "object") return null;
+  const entriesRaw = (raw as Record<string, unknown>).entries;
+  const pairs: [string, unknown][] = Array.isArray(entriesRaw)
+    ? entriesRaw.map((v, i) => [String(i), v])
+    : entriesRaw && typeof entriesRaw === "object"
+      ? Object.entries(entriesRaw)
+      : [];
+  const entries = pairs
+    .map(([key, v]) => normalizeEntry(v, key))
+    .filter((e): e is JournalEntry => e !== null);
+  // "started" survives deleting every entry, so an emptied journal stays empty
+  // instead of falling back to the examples.
+  if (!entries.length && (raw as Record<string, unknown>).started !== true) return null;
+  return { entries: sortEntries(entries) };
+}
+
+export function toggleEntryChecklistItem(entry: JournalEntry, itemIndex: number): JournalEntry {
+  if (!entry.check) return entry;
+  return {
+    ...entry,
+    check: {
+      ...entry.check,
+      list: entry.check.list.map((item, i) => (i === itemIndex ? { ...item, checked: !item.checked } : item)),
+    },
+  };
+}
+
+/** Local date as yyyy-mm-dd. */
+export function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** "16 Nov 2026". Fixed format (not locale-based) so server and client render the same. */
+export function formatEntryDate(iso: string) {
+  if (!isIsoDate(iso)) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${d} ${MONTHS[m - 1]} ${y}`;
+}
+
+export const newEntryId = () => `e${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;

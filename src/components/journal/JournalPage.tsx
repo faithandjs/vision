@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { LuArrowRight, LuList, LuListChecks, LuPencil, LuPlus } from "react-icons/lu";
+import { LuArrowRight, LuCalendar, LuList, LuListChecks, LuPlus } from "react-icons/lu";
 import { DraftNotice, SourceNotice } from "@/components/board/BoardParts";
 import ViewSwitcher from "@/components/board/ViewSwitcher";
 import CoverImage from "@/components/CoverImage";
@@ -10,9 +10,9 @@ import SiteHeader from "@/components/SiteHeader";
 import { useAuth } from "@/context/AuthProvider";
 import { useJournal } from "@/context/JournalProvider";
 import { useStored } from "@/hooks/usePersistentState";
-import { cardProgress } from "@/lib/board";
-import { journalDraftKey, parseDraft } from "@/lib/drafts";
-import type { BoardCard, ViewMode } from "@/lib/types";
+import { cardProgress, formatEntryDate } from "@/lib/board";
+import { entryDraftKey, parseEntryDraft } from "@/lib/drafts";
+import type { JournalEntry, ViewMode } from "@/lib/types";
 import { setPendingView } from "@/lib/view-nav";
 import NoteDialog from "./NoteDialog";
 
@@ -20,7 +20,8 @@ export default function JournalPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { journal, source, loading, toggleCheck } = useJournal();
-  const hasDraft = parseDraft(useStored(user ? journalDraftKey(user.uid) : "vb-journal-draft:none")) !== null;
+  // An unsaved *new* entry is surfaced here; drafts of existing entries restore when you open them.
+  const hasNewDraft = parseEntryDraft(useStored(user ? entryDraftKey(user.uid, "new") : "vb-entry-draft:none")) !== null;
 
   const changeView = (v: ViewMode) => {
     if (v === "journal") return;
@@ -29,7 +30,7 @@ export default function JournalPage() {
   };
 
   const entries = journal.entries;
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   return (
     <>
@@ -50,28 +51,30 @@ export default function JournalPage() {
               <p className="mx-auto mt-4 max-w-xl text-balance text-muted">
                 Five-year plans, career moves, the things that take more than a year.
               </p>
-              {user && entries.length > 0 && (
-                <Link href="/journal/edit" className="btn-outline mt-6">
-                  <LuPencil size={15} /> Edit journal
-                </Link>
-              )}
+              <Link href="/journal/new" className="btn-primary mt-6">
+                <LuPlus size={15} /> New entry
+              </Link>
             </section>
 
-            {hasDraft ? <DraftNotice href="/journal/edit" /> : <SourceNotice source={source} kind="journal" />}
+            {hasNewDraft ? (
+              <DraftNotice href="/journal/new" text="You have an unsaved entry." />
+            ) : (
+              <SourceNotice source={source} kind="journal" />
+            )}
 
             {entries.length === 0 ? (
               <div className="animate-rise mx-auto max-w-md rounded-3xl border-2 border-dashed border-line px-6 py-16 text-center">
                 <h2 className="font-display text-3xl">Your journal is empty</h2>
                 <p className="mt-2 text-muted">Start with a five-year plan, or wherever your thinking is.</p>
-                <Link href="/journal/edit" className="btn-primary mt-6">
+                <Link href="/journal/new" className="btn-primary mt-6">
                   <LuPlus size={15} /> Write your first entry
                 </Link>
               </div>
             ) : (
               <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {entries.map((entry, i) => (
-                  <li key={i}>
-                    <NoteCard entry={entry} index={i} onOpen={() => setOpenIndex(i)} />
+                  <li key={entry.id}>
+                    <NoteCard entry={entry} index={i} onOpen={() => setOpenId(entry.id)} />
                   </li>
                 ))}
               </ol>
@@ -81,9 +84,8 @@ export default function JournalPage() {
       </main>
 
       <NoteDialog
-        entry={openIndex !== null ? (entries[openIndex] ?? null) : null}
-        index={openIndex ?? 0}
-        onClose={() => setOpenIndex(null)}
+        entry={openId !== null ? (entries.find((e) => e.id === openId) ?? null) : null}
+        onClose={() => setOpenId(null)}
         onToggle={toggleCheck}
       />
     </>
@@ -91,7 +93,7 @@ export default function JournalPage() {
 }
 
 /** Compact entry; opens as a note. Entries without an image look like a taped-down paper note. */
-function NoteCard({ entry, index, onOpen }: { entry: BoardCard; index: number; onOpen: () => void }) {
+function NoteCard({ entry, index, onOpen }: { entry: JournalEntry; index: number; onOpen: () => void }) {
   const hasImage = !!entry.image.src;
   const { done, total } = cardProgress(entry);
   const listCount = entry.list?.list.length ?? 0;
@@ -118,7 +120,14 @@ function NoteCard({ entry, index, onOpen }: { entry: BoardCard; index: number; o
         <span aria-hidden className="absolute top-0 left-1/2 h-5 w-20 -translate-x-1/2 -rotate-3 bg-accent/45" />
       )}
       <div className={"flex flex-1 flex-col p-6 " + (hasImage ? "" : "pt-10")}>
-        <p className="eyebrow">Entry {String(index + 1).padStart(2, "0")}</p>
+        {entry.date ? (
+          <p className="eyebrow flex items-center gap-1.5">
+            <LuCalendar size={12} />
+            <time dateTime={entry.date}>{formatEntryDate(entry.date)}</time>
+          </p>
+        ) : (
+          <p className="eyebrow">Undated</p>
+        )}
         <h3 className="mt-2 font-display text-3xl leading-tight text-balance">{entry.title}</h3>
         {entry.p && (
           <p

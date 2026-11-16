@@ -1,9 +1,10 @@
-import { onValue, ref, set } from "firebase/database";
-import { normalizeJournal } from "@/lib/board";
-import type { Journal } from "@/lib/types";
+import { onValue, ref, remove, update } from "firebase/database";
+import { normalizeEntry, normalizeJournal } from "@/lib/board";
+import type { Journal, JournalEntry } from "@/lib/types";
 import { firebaseDb } from "./config";
 
 const journalRef = (uid: string) => ref(firebaseDb(), `users/${uid}/journal`);
+const entryRef = (uid: string, id: string) => ref(firebaseDb(), `users/${uid}/journal/entries/${id}`);
 
 export function subscribeToJournal(
   uid: string,
@@ -13,6 +14,12 @@ export function subscribeToJournal(
   return onValue(journalRef(uid), (snap) => onData(normalizeJournal(snap.val())), onError);
 }
 
-export function saveJournal(uid: string, journal: Journal) {
-  return set(journalRef(uid), normalizeJournal(journal));
+/** Writes one entry; the rest of the journal is untouched. */
+export function saveJournalEntry(uid: string, entry: JournalEntry) {
+  const clean = normalizeEntry(entry, entry.id)!;
+  return update(journalRef(uid), { [`entries/${clean.id}`]: clean, started: true });
+}
+
+export function deleteJournalEntry(uid: string, id: string) {
+  return remove(entryRef(uid, id));
 }

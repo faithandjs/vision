@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { LuCheck, LuMonitor, LuMoon, LuSun, LuX } from "react-icons/lu";
 import { useTheme, type Mode } from "@/context/ThemeProvider";
 import { PALETTES } from "@/lib/palettes";
+import ProfileSection from "./ProfileSection";
 
 const MODE_OPTIONS: { value: Mode; label: string; Icon: typeof LuSun }[] = [
   { value: "light", label: "Light", Icon: LuSun },
@@ -37,6 +38,11 @@ export default function SettingsDialog({ onClose }: { onClose: () => void }) {
       </div>
 
       <div className="space-y-8 px-6 py-6">
+        <section>
+          <h3 className="eyebrow mb-3">Profile</h3>
+          <ProfileSection />
+        </section>
+
         <section>
           <h3 className="eyebrow mb-3">Mode</h3>
           <div role="radiogroup" aria-label="Mode" className="grid grid-cols-3 gap-1 rounded-2xl bg-surface-muted p-1">

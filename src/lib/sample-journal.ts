@@ -1,11 +1,14 @@
+import { sortEntries } from "./board";
 import type { Journal } from "./types";
 
 const unsplash = (id: string) => `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`;
 
 /** Shown to signed-out visitors, and as a starting point for new accounts. */
 export const sampleJournal: Journal = {
-  entries: [
+  entries: sortEntries([
     {
+      id: "sample-five-year",
+      date: "2026-01-04",
       title: "Five-year plan",
       image: { src: unsplash("1501555088652-021faa106b9b"), alt: "Hiker looking out over a green mountain valley" },
       p: "Where I want to be by 2031, and the small steps that get me there.",
@@ -23,6 +26,8 @@ export const sampleJournal: Journal = {
       },
     },
     {
+      id: "sample-career",
+      date: "2026-02-11",
       title: "Career plan",
       image: { src: unsplash("1499951360447-b19be8fe80f5"), alt: "Bright desk with a laptop and monitor" },
       p: "Grow from doing the work to shaping it.",
@@ -37,6 +42,8 @@ export const sampleJournal: Journal = {
       },
     },
     {
+      id: "sample-good-day",
+      date: "2026-03-22",
       // A writing prompt: no image needed.
       title: "What does a good day look like in five years?",
       image: { src: "", alt: "" },
@@ -53,6 +60,8 @@ export const sampleJournal: Journal = {
       },
     },
     {
+      id: "sample-learning",
+      date: "2025-12-30",
       title: "Learning plan",
       image: { src: unsplash("1481627834876-b7833e8f5570"), alt: "Long library aisle lined with books" },
       p: "One deep subject a year, studied properly.",
@@ -63,5 +72,5 @@ export const sampleJournal: Journal = {
         ],
       },
     },
-  ],
+  ]),
 };

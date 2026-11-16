@@ -1,11 +1,12 @@
-import { normalizeBoard } from "./board";
-import type { Board } from "./types";
+import { normalizeBoard, normalizeEntry } from "./board";
+import type { Board, JournalEntry } from "./types";
 
 // Unsaved editor work is kept in this browser per account, so leaving the
 // editor (Cancel, Back, closing the tab) never loses it.
 
 export const draftKey = (uid: string) => `vb-draft:${uid}`;
-export const journalDraftKey = (uid: string) => `vb-journal-draft:${uid}`;
+/** Draft of one journal entry; `entryId` is "new" for an entry not yet saved. */
+export const entryDraftKey = (uid: string, entryId: string) => `vb-entry-draft:${uid}:${entryId}`;
 
 export interface StoredDraft {
   savedAt: number;
@@ -33,4 +34,23 @@ export function formatDraftTime(ts: number) {
   return sameDay
     ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     : d.toLocaleDateString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+export interface StoredEntryDraft {
+  savedAt: number;
+  entry: JournalEntry;
+}
+
+export const serializeEntryDraft = (entry: JournalEntry) => JSON.stringify({ savedAt: Date.now(), entry });
+
+export function parseEntryDraft(raw: string | null): StoredEntryDraft | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    const entry = normalizeEntry(parsed?.entry, String(parsed?.entry?.id ?? ""));
+    if (!entry || !entry.id) return null;
+    return { savedAt: typeof parsed.savedAt === "number" ? parsed.savedAt : Date.now(), entry };
+  } catch {
+    return null;
+  }
 }

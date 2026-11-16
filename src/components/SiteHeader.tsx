@@ -6,6 +6,7 @@ import { LuLogOut, LuNotebookPen, LuPencil, LuSettings } from "react-icons/lu";
 import { useAuth } from "@/context/AuthProvider";
 import { useToast } from "@/context/ToastProvider";
 import { signOut } from "@/firebase/auth";
+import { Avatar } from "./ProfileSection";
 import SettingsDialog from "./SettingsDialog";
 
 export function Logo() {
@@ -100,13 +101,9 @@ function UserMenu() {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label="Account menu"
-        className="grid size-9 place-items-center overflow-hidden rounded-full bg-accent text-sm font-semibold text-accent-ink transition hover:brightness-105"
+        className="rounded-full transition hover:brightness-105"
       >
-        {user.photoURL ? (
-          <img src={user.photoURL} alt="" referrerPolicy="no-referrer" className="size-full object-cover" />
-        ) : (
-          name.charAt(0).toUpperCase()
-        )}
+        <Avatar src={user.photoURL} name={name} className="size-9 text-sm" />
       </button>
       {open && (
         <div
@@ -122,8 +119,8 @@ function UserMenu() {
           <Link role="menuitem" href="/edit" className={itemClass} onClick={() => setOpen(false)}>
             <LuPencil size={15} className="text-muted" /> Edit board
           </Link>
-          <Link role="menuitem" href="/journal/edit" className={itemClass} onClick={() => setOpen(false)}>
-            <LuNotebookPen size={15} className="text-muted" /> Edit journal
+          <Link role="menuitem" href="/journal/new" className={itemClass} onClick={() => setOpen(false)}>
+            <LuNotebookPen size={15} className="text-muted" /> New journal entry
           </Link>
           <button role="menuitem" className={itemClass + " text-danger"} onClick={handleSignOut}>
             <LuLogOut size={15} /> Sign out

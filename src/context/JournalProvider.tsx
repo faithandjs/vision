@@ -1,9 +1,9 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { saveJournal, subscribeToJournal } from "@/firebase/journal";
-import { boardToJournal, journalToBoard, toggleChecklistItem } from "@/lib/board";
+import { deleteJournalEntry, saveJournalEntry, subscribeToJournal } from "@/firebase/journal";
+import { toggleEntryChecklistItem } from "@/lib/board";
 import { sampleJournal } from "@/lib/sample-journal";
-import type { Journal } from "@/lib/types";
+import type { Journal, JournalEntry } from "@/lib/types";
 import { useAuth } from "./AuthProvider";
 import type { BoardSource } from "./BoardProvider";
 import { useToast } from "./ToastProvider";
@@ -13,8 +13,10 @@ interface JournalState {
   /** Same meaning as for the board: sample (signed out), starter (nothing saved yet), saved. */
   source: BoardSource;
   loading: boolean;
-  toggleCheck: (entryIndex: number, itemIndex: number) => void;
-  save: (journal: Journal) => Promise<void>;
+  toggleCheck: (entryId: string, itemIndex: number) => void;
+  /** Saves one entry (new or existing); other entries are untouched. */
+  saveEntry: (entry: JournalEntry) => Promise<void>;
+  deleteEntry: (id: string) => Promise<void>;
 }
 
 const JournalContext = createContext<JournalState | null>(null);
@@ -42,36 +44,44 @@ export function JournalProvider({ children }: { children: React.ReactNode }) {
 
   const remoteForUser = remote && remote.uid === uid ? remote : null;
   const loading = authLoading || (uid !== null && remoteForUser === null);
-  const source: BoardSource = !uid ? "sample" : remoteForUser?.journal ? "saved" : "starter";
-  const journal =
-    source === "saved"
-      ? remoteForUser!.journal!
-      : local && local.uid === uid
-        ? local.journal
-        : sampleJournal;
+  const saved = remoteForUser?.journal ?? null;
+  const source: BoardSource = !uid ? "sample" : saved ? "saved" : "starter";
+  const journal = saved ?? (local && local.uid === uid ? local.journal : sampleJournal);
 
   const toggleCheck = useCallback(
-    (entryIndex: number, itemIndex: number) => {
-      const next = boardToJournal(toggleChecklistItem(journalToBoard(journal), entryIndex, itemIndex));
+    (entryId: string, itemIndex: number) => {
+      const entry = journal.entries.find((e) => e.id === entryId);
+      if (!entry) return;
+      const next = toggleEntryChecklistItem(entry, itemIndex);
       if (source === "saved" && uid) {
-        saveJournal(uid, next).catch(() => toast("Couldn't save that change.", "error"));
+        saveJournalEntry(uid, next).catch(() => toast("Couldn't save that change.", "error"));
       } else {
-        setLocal({ uid, journal: next });
+        setLocal({ uid, journal: { entries: journal.entries.map((e) => (e.id === entryId ? next : e)) } });
       }
     },
     [journal, source, uid, toast],
   );
 
-  const save = useCallback(
-    async (next: Journal) => {
-      if (!uid) throw new Error("Sign in to save your journal.");
-      await saveJournal(uid, next);
+  const saveEntry = useCallback(
+    async (entry: JournalEntry) => {
+      if (!uid) throw new Error("Sign in to save journal entries.");
+      await saveJournalEntry(uid, entry);
+    },
+    [uid],
+  );
+
+  const deleteEntry = useCallback(
+    async (id: string) => {
+      if (!uid) throw new Error("Sign in to delete journal entries.");
+      await deleteJournalEntry(uid, id);
     },
     [uid],
   );
 
   return (
-    <JournalContext.Provider value={{ journal, source, loading, toggleCheck, save }}>{children}</JournalContext.Provider>
+    <JournalContext.Provider value={{ journal, source, loading, toggleCheck, saveEntry, deleteEntry }}>
+      {children}
+    </JournalContext.Provider>
   );
 }
 

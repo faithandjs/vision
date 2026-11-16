@@ -50,12 +50,12 @@ export function SourceNotice({ source, kind = "board" }: { source: BoardSource; 
   );
 }
 
-export function DraftNotice({ href = "/edit" }: { href?: string }) {
+export function DraftNotice({ href = "/edit", text = "You have an unsaved draft." }: { href?: string; text?: string }) {
   return (
     <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-col items-center gap-3 text-center text-sm sm:flex-row sm:gap-3 sm:rounded-full sm:border sm:border-accent/60 sm:bg-accent/15 sm:py-1.5 sm:pr-1.5 sm:pl-4 sm:text-left">
       <span className="inline-flex items-center gap-1.5">
         <LuFilePen size={15} className="shrink-0 text-accent-deep" />
-        You have an unsaved draft.
+        {text}
       </span>
       <Link href={href} className="btn-accent py-1.5">
         Continue editing <LuArrowRight size={14} />

@@ -22,16 +22,16 @@ import { useToast } from "@/context/ToastProvider";
 import { isHttpUrl, normalizeBoard } from "@/lib/board";
 import { formatDraftTime, parseDraft, serializeDraft } from "@/lib/drafts";
 import { readStored, writeStored } from "@/hooks/usePersistentState";
-import type { Board } from "@/lib/types";
+import type { Board, BoardCard } from "@/lib/types";
 
 // Editor-only shape: every card and line gets a stable id so React keys and
 // focus survive reordering and deleting.
-interface DraftItem {
+export interface DraftItem {
   id: string;
   value: string;
   checked: boolean;
 }
-interface DraftCard {
+export interface DraftCard {
   id: string;
   title: string;
   src: string;
@@ -53,9 +53,9 @@ interface Errors {
 }
 
 // Random (not sequential) so ids never collide with ones from a restored draft.
-const newId = () => `k${Math.random().toString(36).slice(2, 10)}`;
-const item = (value = "", checked = false): DraftItem => ({ id: newId(), value, checked });
-const blankCard = (): DraftCard => ({
+export const newId = () => `k${Math.random().toString(36).slice(2, 10)}`;
+export const item = (value = "", checked = false): DraftItem => ({ id: newId(), value, checked });
+export const blankCard = (): DraftCard => ({
   id: newId(),
   title: "",
   src: "",
@@ -67,39 +67,42 @@ const blankCard = (): DraftCard => ({
   check: [],
 });
 
-function toDraft(board: Board): Draft {
+/** Card → editable shape (also used by the journal entry editor). */
+export function cardToDraft(c: BoardCard): DraftCard {
   return {
-    title: board.title,
-    theme: board.theme,
-    cards: board.data.map((c) => ({
-      id: newId(),
-      title: c.title,
-      src: c.image.src,
-      alt: c.image.alt,
-      p: c.p ?? "",
-      listTitle: c.list?.title ?? "",
-      list: (c.list?.list ?? []).map((v) => item(v)),
-      checkTitle: c.check?.title ?? "",
-      check: (c.check?.list ?? []).map((i) => item(i.value, i.checked)),
-    })),
+    id: newId(),
+    title: c.title,
+    src: c.image.src,
+    alt: c.image.alt,
+    p: c.p ?? "",
+    listTitle: c.list?.title ?? "",
+    list: (c.list?.list ?? []).map((v) => item(v)),
+    checkTitle: c.check?.title ?? "",
+    check: (c.check?.list ?? []).map((i) => item(i.value, i.checked)),
   };
 }
 
-function fromDraft(d: Draft): Board {
-  return normalizeBoard({
-    title: d.title,
-    theme: d.theme,
-    data: d.cards.map((c) => ({
-      title: c.title,
-      image: { src: c.src, alt: c.alt },
-      p: c.p,
-      list: { title: c.listTitle, list: c.list.map((i) => i.value) },
-      check: { title: c.checkTitle, list: c.check.map((i) => ({ value: i.value, checked: i.checked })) },
-    })),
-  })!;
+/** Editable shape → raw card; run it through normalizeCard/normalizeBoard before saving. */
+export function draftToRawCard(c: DraftCard) {
+  return {
+    title: c.title,
+    image: { src: c.src, alt: c.alt },
+    p: c.p,
+    list: { title: c.listTitle, list: c.list.map((i) => i.value) },
+    check: { title: c.checkTitle, list: c.check.map((i) => ({ value: i.value, checked: i.checked })) },
+  };
 }
 
-export type EditorKind = "board" | "journal";
+function toDraft(board: Board): Draft {
+  return { title: board.title, theme: board.theme, cards: board.data.map(cardToDraft) };
+}
+
+function fromDraft(d: Draft): Board {
+  return normalizeBoard({ title: d.title, theme: d.theme, data: d.cards.map(draftToRawCard) })!;
+}
+
+// Only the board uses this editor now; journal entries have their own (JournalEntryEditor).
+export type EditorKind = "board";
 
 const COPY = {
   board: {
@@ -117,21 +120,6 @@ const COPY = {
     saved: "Board saved.",
     saveError: "Couldn\u2019t save your board. Try again.",
   },
-  journal: {
-    heading: "Edit your journal",
-    intro: "Write down the longer view: your five-year plan, career plan, what you want to learn.",
-    home: "/journal",
-    back: "Back to journal",
-    noun: "entry",
-    nouns: "entries",
-    section: "Entries",
-    add: "Add an entry",
-    titlePlaceholder: "Five-year plan",
-    starter: "We\u2019ve filled this in with an example journal. Change anything you like, or start from scratch.",
-    saveLabel: "Save journal",
-    saved: "Journal saved.",
-    saveError: "Couldn\u2019t save your journal. Try again.",
-  },
 } as const;
 
 function validate(d: Draft, kind: EditorKind): Errors | null {
@@ -139,17 +127,16 @@ function validate(d: Draft, kind: EditorKind): Errors | null {
   for (const c of d.cards) {
     const e: { title?: string; src?: string } = {};
     if (!c.title.trim()) e.title = `Give this ${COPY[kind].noun} a title.`;
-    // The board needs images for the collage; journal entries may skip them.
-    if (!c.src.trim()) {
-      if (kind === "board") e.src = "Add a link to an image.";
-    } else if (!isHttpUrl(c.src)) e.src = "Use a full link that starts with https://";
+    // The board needs images for the collage.
+    if (!c.src.trim()) e.src = "Add a link to an image.";
+    else if (!isHttpUrl(c.src)) e.src = "Use a full link that starts with https://";
     if (e.title || e.src) cards[c.id] = e;
   }
-  const title = kind === "journal" || d.title.trim() ? undefined : "Give your board a title.";
+  const title = d.title.trim() ? undefined : "Give your board a title.";
   return title || Object.keys(cards).length ? { title, cards } : null;
 }
 
-/** Editor for the board, or (kind="journal") for journal entries. */
+/** Editor for the vision board. */
 export default function BoardEditor({
   kind = "board",
   initial,
@@ -239,7 +226,7 @@ export default function BoardEditor({
 
   const startBlank = () => {
     const card = blankCard();
-    focusId.current = kind === "board" ? "board-title" : `card-${card.id}-title`;
+    focusId.current = "board-title";
     setDraft({ title: "", theme: "", cards: [card] });
     setAttempted(false);
   };
@@ -303,7 +290,6 @@ export default function BoardEditor({
           </div>
         )}
 
-        {kind === "board" && (
         <section className="space-y-5 rounded-3xl border border-line bg-surface p-5 sm:p-7">
           <Field label="Board title" htmlFor="board-title" error={errors?.title}>
             <input
@@ -325,9 +311,8 @@ export default function BoardEditor({
             />
           </Field>
         </section>
-        )}
 
-        <div className={kind === "board" ? "mt-12 mb-4" : "mb-4"}>
+        <div className="mt-12 mb-4">
           <h2 className="font-display text-3xl">{copy.section}</h2>
           <p className="text-sm text-muted">
             {count} {count === 1 ? copy.noun : copy.nouns}
@@ -347,7 +332,7 @@ export default function BoardEditor({
                 onRemove={() => removeCard(card.id)}
                 noun={copy.noun}
                 titlePlaceholder={copy.titlePlaceholder}
-                imageOptional={kind === "journal"}
+                imageOptional={false}
               />
             </li>
           ))}
@@ -390,7 +375,7 @@ export default function BoardEditor({
   );
 }
 
-function Field({
+export function Field({
   label,
   htmlFor,
   error,
@@ -552,7 +537,7 @@ function CardEditor({
   );
 }
 
-function ItemsEditor({
+export function ItemsEditor({
   heading,
   Icon,
   idBase,

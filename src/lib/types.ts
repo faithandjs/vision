@@ -26,9 +26,16 @@ export interface Board {
   data: BoardCard[];
 }
 
-/** Longer-range plans (five-year plan, career…), kept apart from the board. */
+/** A journal entry: a card plus a stable id and a date. */
+export interface JournalEntry extends BoardCard {
+  id: string;
+  /** yyyy-mm-dd */
+  date: string;
+}
+
+/** Longer-range plans (five-year plan, career…), kept apart from the board. Newest first. */
 export interface Journal {
-  entries: BoardCard[];
+  entries: JournalEntry[];
 }
 
 export type ViewMode = "cards" | "collage" | "journal";
