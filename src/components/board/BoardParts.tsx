@@ -38,9 +38,11 @@ export function SourceNotice({ source, kind = "board" }: { source: BoardSource; 
       ? [`You're looking at an example ${kind}.`, "Create your own", "/signup"]
       : ["This example is here to get you started.", "Make it yours", kind === "board" ? "/edit" : "/journal/edit"];
   return (
-    <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-3xl border border-line bg-surface/70 py-1.5 pr-1.5 pl-4 text-sm backdrop-blur sm:rounded-full">
-      <LuSparkles size={15} className="shrink-0 text-accent-deep" />
-      <span>{text}</span>
+    <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-col items-center gap-3 text-center text-sm sm:flex-row sm:gap-3 sm:rounded-full sm:border sm:border-line sm:bg-surface/70 sm:py-1.5 sm:pr-1.5 sm:pl-4 sm:text-left sm:backdrop-blur">
+      <span className="inline-flex items-center gap-1.5">
+        <LuSparkles size={15} className="shrink-0 text-accent-deep" />
+        {text}
+      </span>
       <Link href={href} className="btn-accent py-1.5">
         {cta} <LuArrowRight size={14} />
       </Link>
@@ -50,9 +52,11 @@ export function SourceNotice({ source, kind = "board" }: { source: BoardSource; 
 
 export function DraftNotice({ href = "/edit" }: { href?: string }) {
   return (
-    <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-3xl border border-accent/60 bg-accent/15 py-1.5 pr-1.5 pl-4 text-sm sm:rounded-full">
-      <LuFilePen size={15} className="shrink-0 text-accent-deep" />
-      <span>You have an unsaved draft.</span>
+    <div className="animate-rise mx-auto mb-10 flex w-fit max-w-full flex-col items-center gap-3 text-center text-sm sm:flex-row sm:gap-3 sm:rounded-full sm:border sm:border-accent/60 sm:bg-accent/15 sm:py-1.5 sm:pr-1.5 sm:pl-4 sm:text-left">
+      <span className="inline-flex items-center gap-1.5">
+        <LuFilePen size={15} className="shrink-0 text-accent-deep" />
+        You have an unsaved draft.
+      </span>
       <Link href={href} className="btn-accent py-1.5">
         Continue editing <LuArrowRight size={14} />
       </Link>

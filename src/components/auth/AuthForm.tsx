@@ -202,7 +202,7 @@ function SocialButton({
 }
 
 function AuthArt() {
-  const [a, , b, c, , d] = sampleBoard.data;
+  const [a, b, c, d] = sampleBoard.data;
   const tiles = [
     { card: a, cls: "row-span-2" },
     { card: b, cls: "" },

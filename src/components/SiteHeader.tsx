@@ -2,11 +2,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { LuLogOut, LuMoon, LuNotebookPen, LuPencil, LuSun } from "react-icons/lu";
+import { LuLogOut, LuNotebookPen, LuPencil, LuSettings } from "react-icons/lu";
 import { useAuth } from "@/context/AuthProvider";
-import { useTheme } from "@/context/ThemeProvider";
 import { useToast } from "@/context/ToastProvider";
 import { signOut } from "@/firebase/auth";
+import SettingsDialog from "./SettingsDialog";
 
 export function Logo() {
   return (
@@ -19,11 +19,14 @@ export function Logo() {
 export default function SiteHeader({ children }: { children?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/75 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:px-6 lg:px-8">
-        <Logo />
-        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-          {children}
-          <ThemeToggle />
+      {/* Phones: a packed row. md and up: three columns so the view bar sits in the true center. */}
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-1.5 px-4 sm:gap-2 sm:px-6 md:grid md:grid-cols-[1fr_auto_1fr] lg:px-8">
+        <div className="mr-auto md:mr-0 md:justify-self-start">
+          <Logo />
+        </div>
+        <div className="md:justify-self-center">{children}</div>
+        <div className="flex items-center gap-1.5 sm:gap-2 md:justify-self-end">
+          <SettingsButton />
           <UserMenu />
         </div>
       </div>
@@ -31,13 +34,15 @@ export default function SiteHeader({ children }: { children?: React.ReactNode })
   );
 }
 
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
-  const dark = theme === "dark";
+function SettingsButton() {
+  const [open, setOpen] = useState(false);
   return (
-    <button onClick={toggleTheme} className="icon-btn" aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}>
-      {dark ? <LuSun size={18} /> : <LuMoon size={18} />}
-    </button>
+    <>
+      <button onClick={() => setOpen(true)} className="icon-btn" aria-label="Settings" aria-haspopup="dialog">
+        <LuSettings size={18} />
+      </button>
+      {open && <SettingsDialog onClose={() => setOpen(false)} />}
+    </>
   );
 }
 
